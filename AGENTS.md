@@ -48,9 +48,3 @@ Applies when instructions conflict (high → low):
 - Trabajar siempre en la rama activa del repositorio principal.
 - El usuario es quien decide cuándo crear ramas y commits. No hacerlo de forma autónoma.
 
-## Repo Conventions
-
-- Canonical component docs directories are system-scoped:
-  `design-systems/<id>/docs/components` and `design-systems/<id>/docs/_spec/components`.
-- Treat `design-systems/<id>/docs/_generated/**` as generated artifacts; modify via
-  scripts/workflows, not manual editing.
