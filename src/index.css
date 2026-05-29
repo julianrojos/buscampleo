@@ -1,7 +1,7 @@
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
-@import "@fontsource-variable/noto-sans";
-@import "@fontsource-variable/roboto-slab";
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '@fontsource-variable/noto-sans';
+@import '@fontsource-variable/roboto-slab';
 
 @tailwind base;
 

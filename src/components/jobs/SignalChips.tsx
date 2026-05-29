@@ -7,11 +7,7 @@ interface SignalChipsProps {
   readonly className?: string;
 }
 
-export default function SignalChips({
-  signals,
-  max = 3,
-  className,
-}: SignalChipsProps) {
+export default function SignalChips({ signals, max = 3, className }: SignalChipsProps) {
   if (signals.length === 0) {
     return null;
   }

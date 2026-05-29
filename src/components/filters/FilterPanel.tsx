@@ -31,14 +31,19 @@ const SORT_OPTIONS = [
 
 export function FilterFields() {
   const { filters, setFilter, toggleFilter, resetFilters } = useJobFilters();
+  const queryId = 'filters-query';
+  const minScoreId = 'filters-min-score';
+  const sortId = 'filters-sort';
+  const sortDirId = 'filters-sort-dir';
 
   return (
     <div className="space-y-5">
       <section className="space-y-2">
-        <label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+        <span className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
           Buscar
-        </label>
+        </span>
         <Input
+          id={queryId}
           aria-label="Buscar ofertas"
           value={filters.query}
           onChange={(event) => setFilter('query', event.target.value)}
@@ -47,12 +52,12 @@ export function FilterFields() {
       </section>
 
       <section className="space-y-2">
-        <label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+        <span className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
           Fuente
-        </label>
+        </span>
         <div className="space-y-2">
           {MOCK_SOURCES.map((source) => (
-            <label key={source.id} className="flex items-center gap-2 text-sm">
+            <label key={source.id} className="flex cursor-pointer items-center gap-2 text-sm">
               <Checkbox
                 checked={filters.source.includes(source.id)}
                 onCheckedChange={() => toggleFilter('source', source.id)}
@@ -64,12 +69,12 @@ export function FilterFields() {
       </section>
 
       <section className="space-y-2">
-        <label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+        <span className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
           Modalidad
-        </label>
+        </span>
         <div className="space-y-2">
           {MODALITY_OPTIONS.map((option) => (
-            <label key={option.value} className="flex items-center gap-2 text-sm">
+            <label key={option.value} className="flex cursor-pointer items-center gap-2 text-sm">
               <Checkbox
                 checked={filters.modality.includes(option.value)}
                 onCheckedChange={() => toggleFilter('modality', option.value)}
@@ -81,10 +86,14 @@ export function FilterFields() {
       </section>
 
       <section className="space-y-2">
-        <label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+        <label
+          htmlFor={minScoreId}
+          className="text-xs font-semibold tracking-widest uppercase text-muted-foreground"
+        >
           Score mínimo
         </label>
         <Input
+          id={minScoreId}
           aria-label="Score mínimo"
           inputMode="numeric"
           type="number"
@@ -100,16 +109,16 @@ export function FilterFields() {
       </section>
 
       <section className="space-y-2">
-        <label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+        <span className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
           Filtros rápidos
-        </label>
+        </span>
         <div className="space-y-2">
           {[
             { key: 'unread_only', label: 'Solo no leídas' },
             { key: 'pending_analysis', label: 'Análisis pendiente' },
             { key: 'show_hidden', label: 'Mostrar ocultas' },
           ].map((option) => (
-            <label key={option.key} className="flex items-center gap-2 text-sm">
+            <label key={option.key} className="flex cursor-pointer items-center gap-2 text-sm">
               <Checkbox
                 checked={filters[option.key as keyof typeof filters] as boolean}
                 onCheckedChange={(checked) =>
@@ -123,15 +132,15 @@ export function FilterFields() {
       </section>
 
       <section className="space-y-2">
-        <label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+        <span className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
           Orden
-        </label>
+        </span>
         <div className="grid grid-cols-2 gap-2">
           <Select
             value={filters.sort}
             onValueChange={(value) => setFilter('sort', value as typeof filters.sort)}
           >
-            <SelectTrigger>
+            <SelectTrigger id={sortId} aria-label="Ordenar por">
               <SelectValue placeholder="Ordenar por" />
             </SelectTrigger>
             <SelectContent>
@@ -146,7 +155,7 @@ export function FilterFields() {
             value={filters.sort_dir}
             onValueChange={(value) => setFilter('sort_dir', value as typeof filters.sort_dir)}
           >
-            <SelectTrigger>
+            <SelectTrigger id={sortDirId} aria-label="Dirección">
               <SelectValue placeholder="Dirección" />
             </SelectTrigger>
             <SelectContent>
@@ -171,9 +180,7 @@ export default function FilterPanel() {
     <aside className="hidden w-72 shrink-0 flex-col border-r border-border bg-background px-4 py-4 lg:flex">
       <div className="space-y-4">
         <div className="space-y-1">
-          <h2 className="font-heading text-sm font-semibold tracking-widest uppercase">
-            Filtros
-          </h2>
+          <h2 className="font-heading text-sm font-semibold tracking-widest uppercase">Filtros</h2>
           <p className="text-xs leading-relaxed text-muted-foreground">
             Ajusta fuentes, modalidad, score y estado de lectura.
           </p>

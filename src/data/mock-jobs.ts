@@ -43,7 +43,12 @@ export const MOCK_JOBS = [
     semantic_score: 89,
     profile_match_score: 88,
     final_score: 91,
-    positive_signals: ['Design Systems', 'Figma Variables', 'Documentation', 'Engineering collaboration'],
+    positive_signals: [
+      'Design Systems',
+      'Figma Variables',
+      'Documentation',
+      'Engineering collaboration',
+    ],
     red_flags: ['Salary not published'],
     detected_skills: ['Figma', 'Design Systems', 'Component Libraries', 'CSS'],
     detected_keywords: ['design systems', 'variables', 'handoff', 'engineering'],

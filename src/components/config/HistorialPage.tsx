@@ -1,5 +1,12 @@
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import type { ScrapingRun } from '@/types/scraping';
 import { cn } from '@/lib/utils';
 
@@ -79,9 +86,7 @@ export default function HistorialPage() {
     <div className="h-full overflow-y-auto px-4 py-4 lg:px-6">
       <div className="space-y-4">
         <div className="space-y-1">
-          <h1 className="font-heading text-2xl font-semibold tracking-wide uppercase">
-            Historial
-          </h1>
+          <h1 className="font-heading text-2xl font-semibold tracking-wide uppercase">Historial</h1>
           <p className="text-sm text-muted-foreground">
             Revisa el estado de las últimas ejecuciones del scraping.
           </p>

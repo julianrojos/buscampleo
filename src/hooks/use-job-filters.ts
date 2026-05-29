@@ -60,7 +60,9 @@ function parseFilters(
     unread_only: parseBoolean(searchParams.get('unread_only')),
     pending_analysis: parseBoolean(searchParams.get('pending_analysis')),
     show_hidden: parseBoolean(searchParams.get('show_hidden')),
-    sort: VALID_SORT_FIELDS.includes(sort as SortField) ? (sort as SortField) : DEFAULT_FILTERS.sort,
+    sort: VALID_SORT_FIELDS.includes(sort as SortField)
+      ? (sort as SortField)
+      : DEFAULT_FILTERS.sort,
     sort_dir: VALID_SORT_DIRS.includes(sortDir as SortDir)
       ? (sortDir as SortDir)
       : DEFAULT_FILTERS.sort_dir,
@@ -109,10 +111,7 @@ export default function useJobFilters(): UseJobFiltersReturn {
     });
   }
 
-  function toggleFilter(
-    key: 'modality' | 'source' | 'keywords',
-    value: string,
-  ) {
+  function toggleFilter(key: 'modality' | 'source' | 'keywords', value: string) {
     setSearchParams((previous) => {
       const next = new URLSearchParams(previous);
       const currentValues = next.getAll(key);

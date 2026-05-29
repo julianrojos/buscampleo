@@ -26,13 +26,16 @@ function updateJobInCache(
   if (options.invalidateLists) {
     void queryClient.invalidateQueries({ queryKey: ['jobs'] });
   } else {
-    queryClient.setQueriesData<Job[]>({ queryKey: ['jobs'], exact: false }, (currentJobs) =>
-      currentJobs?.map((job) => (job.id === id ? updatedJob ?? { ...job, ...patch } : job)) ?? [],
+    queryClient.setQueriesData<Job[]>(
+      { queryKey: ['jobs'], exact: false },
+      (currentJobs) =>
+        currentJobs?.map((job) => (job.id === id ? (updatedJob ?? { ...job, ...patch }) : job)) ??
+        [],
     );
   }
 
   queryClient.setQueryData<Job | undefined>(['job', id], (currentJob) =>
-    currentJob ? updatedJob ?? { ...currentJob, ...patch } : currentJob,
+    currentJob ? (updatedJob ?? { ...currentJob, ...patch }) : currentJob,
   );
 }
 
@@ -40,12 +43,17 @@ export default function useJobActions(): UseJobActionsReturn {
   const queryClient = useQueryClient();
 
   function save(id: string) {
-    updateJobInCache(queryClient, id, {
-      is_saved: true,
-      is_read: true,
-      status: 'saved',
-      updated_at: nowIso(),
-    }, { invalidateLists: true });
+    updateJobInCache(
+      queryClient,
+      id,
+      {
+        is_saved: true,
+        is_read: true,
+        status: 'saved',
+        updated_at: nowIso(),
+      },
+      { invalidateLists: true },
+    );
   }
 
   function unsave(id: string) {
@@ -57,29 +65,44 @@ export default function useJobActions(): UseJobActionsReturn {
   }
 
   function hide(id: string) {
-    updateJobInCache(queryClient, id, {
-      is_hidden: true,
-      status: 'hidden',
-      updated_at: nowIso(),
-    }, { invalidateLists: true });
+    updateJobInCache(
+      queryClient,
+      id,
+      {
+        is_hidden: true,
+        status: 'hidden',
+        updated_at: nowIso(),
+      },
+      { invalidateLists: true },
+    );
   }
 
   function apply(id: string) {
-    updateJobInCache(queryClient, id, {
-      is_read: true,
-      is_saved: true,
-      status: 'applied',
-      updated_at: nowIso(),
-    }, { invalidateLists: true });
+    updateJobInCache(
+      queryClient,
+      id,
+      {
+        is_read: true,
+        is_saved: true,
+        status: 'applied',
+        updated_at: nowIso(),
+      },
+      { invalidateLists: true },
+    );
   }
 
   function markRead(id: string) {
-    updateJobInCache(queryClient, id, {
-      is_read: true,
-      status: 'seen',
-      last_seen_at: nowIso(),
-      updated_at: nowIso(),
-    }, { invalidateLists: true });
+    updateJobInCache(
+      queryClient,
+      id,
+      {
+        is_read: true,
+        status: 'seen',
+        last_seen_at: nowIso(),
+        updated_at: nowIso(),
+      },
+      { invalidateLists: true },
+    );
   }
 
   return {

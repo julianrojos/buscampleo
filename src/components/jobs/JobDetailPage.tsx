@@ -2,7 +2,6 @@ import { ExternalLink, Save, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import EmptyState from '@/components/shared/EmptyState';
 import ErrorState from '@/components/shared/ErrorState';
 import RedFlagList from '@/components/jobs/RedFlagList';
 import ScoreBadge from '@/components/jobs/ScoreBadge';
@@ -30,10 +29,7 @@ export default function JobDetailPage() {
   const { save, unsave, apply, markRead } = useJobActions();
 
   const search = searchParams.toString();
-  const backToList = useMemo(
-    () => (search ? `/ofertas?${search}` : '/ofertas'),
-    [search],
-  );
+  const backToList = useMemo(() => (search ? `/ofertas?${search}` : '/ofertas'), [search]);
 
   useEffect(() => {
     if (!isLoading && !isError && !job) {
@@ -50,10 +46,10 @@ export default function JobDetailPage() {
   if (isError) {
     return (
       <div className="h-full overflow-y-auto px-4 py-4 lg:px-6">
-          <ErrorState
-            message={error instanceof Error ? error.message : 'No se pudo cargar el detalle.'}
-            onRetry={() => void navigate(backToList, { replace: true })}
-          />
+        <ErrorState
+          message={error instanceof Error ? error.message : 'No se pudo cargar el detalle.'}
+          onRetry={() => void navigate(backToList, { replace: true })}
+        />
       </div>
     );
   }
@@ -138,10 +134,7 @@ export default function JobDetailPage() {
                   <span>{item.value ?? '—'}</span>
                 </div>
                 <div className="h-2 overflow-hidden bg-muted">
-                  <div
-                    className="h-full bg-primary"
-                    style={{ width: `${item.value ?? 0}%` }}
-                  />
+                  <div className="h-full bg-primary" style={{ width: `${item.value ?? 0}%` }} />
                 </div>
               </div>
             ))}
@@ -181,7 +174,9 @@ export default function JobDetailPage() {
                 Ambiguos
               </h3>
               <p className="text-sm text-muted-foreground">
-                {job.description ? 'Descripción suficiente para validar la señal.' : 'La descripción está incompleta o falta.'}
+                {job.description
+                  ? 'Descripción suficiente para validar la señal.'
+                  : 'La descripción está incompleta o falta.'}
               </p>
             </div>
           </div>

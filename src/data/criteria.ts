@@ -134,7 +134,8 @@ export const DEFAULT_CRITERIA_CONFIG = {
       pattern: 'frontend avanzado obligatorio',
       weight: -1,
       category: 'design-code',
-      explain: 'Puede indicar una deriva hacia desarrollo puro o requisitos excesivos para un rol de diseño.',
+      explain:
+        'Puede indicar una deriva hacia desarrollo puro o requisitos excesivos para un rol de diseño.',
       active: true,
     },
     {

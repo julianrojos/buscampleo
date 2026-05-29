@@ -2,19 +2,27 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Toggle } from '@/components/ui/toggle';
 
 export default function EmailsPage() {
   const [enabled, setEnabled] = useState(true);
+  const recipientId = 'emails-recipient';
+  const frequencyId = 'emails-frequency';
+  const minScoreId = 'emails-min-score';
+  const maxOffersId = 'emails-max-offers';
 
   return (
     <div className="h-full overflow-y-auto px-4 py-4 lg:px-6">
       <div className="space-y-4">
         <div className="space-y-1">
-          <h1 className="font-heading text-2xl font-semibold tracking-wide uppercase">
-            Emails
-          </h1>
+          <h1 className="font-heading text-2xl font-semibold tracking-wide uppercase">Emails</h1>
           <p className="text-sm text-muted-foreground">
             Configura los digests por correo y cómo se priorizan.
           </p>
@@ -34,14 +42,18 @@ export default function EmailsPage() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="space-y-2">
-              <span className="text-sm font-medium">Email destinatario</span>
-              <Input placeholder="tu@email.com" />
-            </label>
-            <label className="space-y-2">
-              <span className="text-sm font-medium">Frecuencia</span>
+            <div className="space-y-2">
+              <label htmlFor={recipientId} className="text-sm font-medium">
+                Email destinatario
+              </label>
+              <Input id={recipientId} type="email" placeholder="tu@email.com" />
+            </div>
+            <div className="space-y-2">
+              <span id={frequencyId} className="text-sm font-medium">
+                Frecuencia
+              </span>
               <Select defaultValue="daily">
-                <SelectTrigger>
+                <SelectTrigger aria-labelledby={frequencyId}>
                   <SelectValue placeholder="Selecciona" />
                 </SelectTrigger>
                 <SelectContent>
@@ -50,15 +62,19 @@ export default function EmailsPage() {
                   <SelectItem value="high-score">Solo alto score</SelectItem>
                 </SelectContent>
               </Select>
-            </label>
-            <label className="space-y-2">
-              <span className="text-sm font-medium">Score mínimo</span>
-              <Input type="number" min="0" max="100" placeholder="70" />
-            </label>
-            <label className="space-y-2">
-              <span className="text-sm font-medium">Máx. ofertas por email</span>
-              <Input type="number" min="1" max="20" placeholder="5" />
-            </label>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor={minScoreId} className="text-sm font-medium">
+                Score mínimo
+              </label>
+              <Input id={minScoreId} type="number" min="0" max="100" placeholder="70" />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor={maxOffersId} className="text-sm font-medium">
+                Máx. ofertas por email
+              </label>
+              <Input id={maxOffersId} type="number" min="1" max="20" placeholder="5" />
+            </div>
           </div>
 
           <Button type="button">Enviar email de prueba</Button>

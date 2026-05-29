@@ -62,9 +62,7 @@ export default function JobList() {
       <div className="flex h-full min-h-0 flex-col px-4 py-4 lg:px-6">
         <div className="flex items-center justify-between gap-3 border-b border-border pb-3">
           <div>
-            <h1 className="font-heading text-lg font-semibold tracking-wide uppercase">
-              Ofertas
-            </h1>
+            <h1 className="font-heading text-lg font-semibold tracking-wide uppercase">Ofertas</h1>
             <p className="text-xs text-muted-foreground">0 resultados con estos filtros</p>
           </div>
           <FilterSheet />
@@ -73,7 +71,15 @@ export default function JobList() {
           <EmptyState
             title="No hay resultados"
             description="Prueba a relajar los filtros o limpiar la búsqueda."
-            action={<button type="button" onClick={resetFilters} className="inline-flex items-center justify-center rounded-none border border-border px-4 py-2 text-xs font-semibold tracking-widest uppercase">Limpiar filtros</button>}
+            action={
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="inline-flex items-center justify-center rounded-none border border-border px-4 py-2 text-xs font-semibold tracking-widest uppercase"
+              >
+                Limpiar filtros
+              </button>
+            }
           />
         </div>
       </div>
@@ -87,12 +93,8 @@ export default function JobList() {
       <div className="border-b border-border px-4 py-3 lg:px-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="font-heading text-lg font-semibold tracking-wide uppercase">
-              Ofertas
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              {jobs.length} resultados activos
-            </p>
+            <h1 className="font-heading text-lg font-semibold tracking-wide uppercase">Ofertas</h1>
+            <p className="text-xs text-muted-foreground">{jobs.length} resultados activos</p>
           </div>
           <FilterSheet />
         </div>
@@ -102,10 +104,7 @@ export default function JobList() {
       </div>
 
       <div ref={parentRef} className="min-h-0 flex-1 overflow-y-auto px-4 py-4 lg:px-6">
-        <div
-          className="relative w-full"
-          style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
-        >
+        <div className="relative w-full" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
           {virtualItems.map((virtualItem) => {
             const job = jobs[virtualItem.index];
 

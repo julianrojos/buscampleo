@@ -7,7 +7,7 @@ const items = [
   {
     to: '/criterios',
     title: 'Criterios',
-    description: 'Keywords positivas/negativas y roles objetivo.',
+    description: 'Señales ponderadas, exclusiones duras y reglas condicionales.',
     icon: FileSliders,
   },
   {
@@ -29,9 +29,7 @@ export default function SettingsHub() {
     <div className="h-full overflow-y-auto px-4 py-4 lg:px-6">
       <div className="space-y-4">
         <div className="space-y-1">
-          <h1 className="font-heading text-2xl font-semibold tracking-wide uppercase">
-            Ajustes
-          </h1>
+          <h1 className="font-heading text-2xl font-semibold tracking-wide uppercase">Ajustes</h1>
           <p className="text-sm text-muted-foreground">
             Atajos para la configuración que se consulta con menos frecuencia.
           </p>

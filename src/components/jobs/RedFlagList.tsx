@@ -8,11 +8,7 @@ interface RedFlagListProps {
   readonly className?: string;
 }
 
-export default function RedFlagList({
-  flags,
-  max,
-  className,
-}: RedFlagListProps) {
+export default function RedFlagList({ flags, max, className }: RedFlagListProps) {
   if (flags.length === 0) {
     return null;
   }

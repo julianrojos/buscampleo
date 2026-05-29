@@ -14,13 +14,9 @@ export default function EmptyState({ title, description, action }: EmptyStatePro
         <SearchX className="size-5 text-muted-foreground" />
       </div>
       <div className="space-y-1">
-        <h2 className="font-heading text-lg font-semibold tracking-wide uppercase">
-          {title}
-        </h2>
+        <h2 className="font-heading text-lg font-semibold tracking-wide uppercase">{title}</h2>
         {description ? (
-          <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
-            {description}
-          </p>
+          <p className="max-w-md text-sm leading-relaxed text-muted-foreground">{description}</p>
         ) : null}
       </div>
       {action ? action : null}

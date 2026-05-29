@@ -20,10 +20,7 @@ export interface JobFilters {
 export interface UseJobFiltersReturn {
   readonly filters: JobFilters;
   setFilter: <K extends keyof JobFilters>(key: K, value: JobFilters[K]) => void;
-  toggleFilter: (
-    key: 'modality' | 'source' | 'keywords',
-    value: string,
-  ) => void;
+  toggleFilter: (key: 'modality' | 'source' | 'keywords', value: string) => void;
   removeFilter: <K extends keyof JobFilters>(key: K) => void;
   resetFilters: () => void;
 }

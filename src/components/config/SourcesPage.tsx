@@ -2,7 +2,14 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Toggle } from '@/components/ui/toggle';
 import { MOCK_SOURCES } from '@/data/mock-sources';
 import { cn } from '@/lib/utils';
@@ -37,9 +44,7 @@ export default function SourcesPage() {
       <div className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-1">
-            <h1 className="font-heading text-2xl font-semibold tracking-wide uppercase">
-              Fuentes
-            </h1>
+            <h1 className="font-heading text-2xl font-semibold tracking-wide uppercase">Fuentes</h1>
             <p className="text-sm text-muted-foreground">
               Gestiona las fuentes desde las que Buscampleo rastrea ofertas.
             </p>
@@ -77,9 +82,7 @@ export default function SourcesPage() {
                       onPressedChange={() =>
                         setSources((current) =>
                           current.map((item) =>
-                            item.id === source.id
-                              ? { ...item, active: !item.active }
-                              : item,
+                            item.id === source.id ? { ...item, active: !item.active } : item,
                           ),
                         )
                       }

@@ -19,12 +19,16 @@ export default function TopBar() {
   const { filters, setFilter } = useJobFilters();
   const { pathname } = useLocation();
   const showSearch = pathname.startsWith('/ofertas');
+  const searchId = 'topbar-search';
 
   return (
     <header className="border-b border-border bg-background">
       <div className="flex flex-col gap-3 px-4 py-3 lg:flex-row lg:items-center lg:gap-6 lg:px-6">
         <div className="flex items-center justify-between gap-3">
-          <NavLink to="/ofertas" className="font-heading text-lg font-semibold tracking-wide uppercase">
+          <NavLink
+            to="/ofertas"
+            className="font-heading text-lg font-semibold tracking-wide uppercase"
+          >
             Buscampleo
           </NavLink>
           <div className="lg:hidden">
@@ -52,17 +56,20 @@ export default function TopBar() {
 
         {showSearch ? (
           <div className="flex flex-1 items-center gap-3">
-            <label className="relative flex-1">
+            <div className="relative flex-1">
+              <label htmlFor={searchId} className="sr-only">
+                Buscar ofertas
+              </label>
               <Search className="pointer-events-none absolute left-0 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
-                aria-label="Buscar ofertas"
+                id={searchId}
                 type="search"
                 value={filters.query}
                 onChange={(event) => setFilter('query', event.target.value)}
                 placeholder="Buscar ofertas..."
                 className="pl-5"
               />
-            </label>
+            </div>
             <div className="hidden lg:flex">
               <StatusIndicator />
             </div>

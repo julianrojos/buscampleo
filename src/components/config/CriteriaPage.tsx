@@ -3,7 +3,13 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Toggle } from '@/components/ui/toggle';
 import { DEFAULT_CRITERIA_CONFIG } from '@/data/criteria';
@@ -20,7 +26,7 @@ import type {
 const CATEGORY_LABELS: Record<CriteriaCategory, string> = {
   'design-systems': 'Design systems',
   'design-code': 'Design/code',
-  accessibility: 'Accessibilidad',
+  accessibility: 'Accesibilidad',
   modality: 'Modalidad',
   maturity: 'Madurez',
   collaboration: 'Colaboración',
@@ -29,7 +35,7 @@ const CATEGORY_LABELS: Record<CriteriaCategory, string> = {
 };
 
 const CATEGORY_OPTIONS = (Object.entries(CATEGORY_LABELS) as [CriteriaCategory, string][]).map(
-  ([value, label]) => ({ value, label } as const),
+  ([value, label]) => ({ value, label }) as const,
 );
 
 const SEVERITY_OPTIONS: readonly {
@@ -73,9 +79,11 @@ function countActive<T extends { readonly active: boolean }>(items: readonly T[]
   return items.filter((item) => item.active).length;
 }
 
-function countWeightedByTone(
-  items: readonly WeightedSignalCriterion[],
-): { readonly positive: number; readonly negative: number; readonly neutral: number } {
+function countWeightedByTone(items: readonly WeightedSignalCriterion[]): {
+  readonly positive: number;
+  readonly negative: number;
+  readonly neutral: number;
+} {
   return {
     positive: items.filter((item) => item.weight > 0).length,
     negative: items.filter((item) => item.weight < 0).length,
@@ -159,17 +167,13 @@ function SectionShell({
     <section
       className={cn(
         'space-y-4 rounded-none border p-4 sm:p-5',
-        tone === 'danger'
-          ? 'border-danger/30 bg-danger/5'
-          : 'border-border bg-background',
+        tone === 'danger' ? 'border-danger/30 bg-danger/5' : 'border-border bg-background',
       )}
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-heading text-lg font-semibold tracking-wide uppercase">
-              {title}
-            </h2>
+            <h2 className="font-heading text-lg font-semibold tracking-wide uppercase">{title}</h2>
             <Badge
               className={cn(
                 'border px-2 py-1 text-[0.625rem] font-semibold tracking-widest uppercase',
@@ -245,12 +249,7 @@ function HardExcludeRow({
             Estas reglas eliminan la oferta del radar.
           </p>
         </div>
-        <Toggle
-          pressed={item.active}
-          onPressedChange={onToggle}
-          variant="outline"
-          size="sm"
-        >
+        <Toggle pressed={item.active} onPressedChange={onToggle} variant="outline" size="sm">
           {item.active ? 'Activa' : 'Inactiva'}
         </Toggle>
       </div>
@@ -317,12 +316,7 @@ function WeightedSignalRow({
             La polaridad la determina el signo del peso.
           </p>
         </div>
-        <Toggle
-          pressed={item.active}
-          onPressedChange={onToggle}
-          variant="outline"
-          size="sm"
-        >
+        <Toggle pressed={item.active} onPressedChange={onToggle} variant="outline" size="sm">
           {item.active ? 'Activa' : 'Inactiva'}
         </Toggle>
       </div>
@@ -383,7 +377,10 @@ function WeightedSignalRow({
         </div>
       </div>
 
-      <FieldLabel label="Explicación" hint="Visible siempre en el criterio y reutilizable en el detalle.">
+      <FieldLabel
+        label="Explicación"
+        hint="Visible siempre en el criterio y reutilizable en el detalle."
+      >
         <Textarea
           value={item.explain}
           onChange={(event) => onUpdate({ explain: event.target.value })}
@@ -407,11 +404,23 @@ function ConditionalRuleCard({
   const tone = item.severity === 'block' ? 'danger' : 'warning';
 
   return (
-    <div className={cn('space-y-3 rounded-none border p-4', tone === 'danger' ? 'border-danger/30 bg-danger/5' : 'border-warning/30 bg-warning/5')}>
+    <div
+      className={cn(
+        'space-y-3 rounded-none border p-4',
+        tone === 'danger' ? 'border-danger/30 bg-danger/5' : 'border-warning/30 bg-warning/5',
+      )}
+    >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge className={cn('border px-2 py-1', tone === 'danger' ? 'border-danger/30 bg-danger/10 text-danger' : 'border-warning/30 bg-warning/10 text-warning')}>
+            <Badge
+              className={cn(
+                'border px-2 py-1',
+                tone === 'danger'
+                  ? 'border-danger/30 bg-danger/10 text-danger'
+                  : 'border-warning/30 bg-warning/10 text-warning',
+              )}
+            >
               {severityLabel(item.severity)}
             </Badge>
             <Badge variant="secondary">{item.active ? 'Activa' : 'Inactiva'}</Badge>
@@ -419,12 +428,7 @@ function ConditionalRuleCard({
           <h3 className="font-heading text-base font-semibold tracking-wide">{item.name}</h3>
           <p className="text-sm text-muted-foreground">{item.description}</p>
         </div>
-        <Toggle
-          pressed={item.active}
-          onPressedChange={onToggle}
-          variant="outline"
-          size="sm"
-        >
+        <Toggle pressed={item.active} onPressedChange={onToggle} variant="outline" size="sm">
           {item.active ? 'Activa' : 'Inactiva'}
         </Toggle>
       </div>
@@ -563,9 +567,7 @@ export default function CriteriaPage() {
     <div className="h-full overflow-y-auto px-4 py-4 lg:px-6">
       <div className="space-y-6">
         <div className="space-y-2">
-          <h1 className="font-heading text-2xl font-semibold tracking-wide uppercase">
-            Criterios
-          </h1>
+          <h1 className="font-heading text-2xl font-semibold tracking-wide uppercase">Criterios</h1>
           <p className="max-w-3xl text-sm text-muted-foreground">
             Editor declarativo de señales y reglas. La prioridad es descartar poco, puntuar con
             explicación y reservar las reglas condicionales para cortafuegos claros.
@@ -653,7 +655,12 @@ export default function CriteriaPage() {
               </FieldLabel>
 
               <div className="flex items-end">
-                <Button type="button" size="sm" className="w-full lg:w-auto" onClick={addHardExclude}>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="w-full lg:w-auto"
+                  onClick={addHardExclude}
+                >
                   Añadir exclusión
                 </Button>
               </div>
@@ -667,7 +674,7 @@ export default function CriteriaPage() {
           description="Un solo array, polaridad por signo y explicación visible. El usuario puede ajustar peso, categoría y texto explicativo sin perder la trazabilidad."
         >
           <div className="space-y-4">
-        <div className="grid gap-3 rounded-none border border-border bg-background p-3 lg:grid-cols-[1fr_0.8fr_0.6fr_auto]">
+            <div className="grid gap-3 rounded-none border border-border bg-background p-3 lg:grid-cols-[1fr_0.8fr_0.6fr_auto]">
               <FieldLabel label="Nuevo patrón">
                 <Input
                   value={weightedDraft.pattern}
@@ -709,8 +716,8 @@ export default function CriteriaPage() {
                   onChange={(event) =>
                     setWeightedDraft((current) => ({ ...current, weight: event.target.value }))
                   }
-                  />
-                </FieldLabel>
+                />
+              </FieldLabel>
 
               <FieldLabel
                 label="Explicación"
@@ -728,7 +735,12 @@ export default function CriteriaPage() {
               </FieldLabel>
 
               <div className="flex items-end">
-                <Button type="button" size="sm" className="w-full lg:w-auto" onClick={addWeightedSignal}>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="w-full lg:w-auto"
+                  onClick={addWeightedSignal}
+                >
                   Añadir señal
                 </Button>
               </div>
@@ -736,8 +748,11 @@ export default function CriteriaPage() {
 
             <div className="space-y-5">
               {(['positive', 'negative', 'neutral'] as const).map((tone) => {
-                const items = criteria.weighted_signals.filter((item) => weightTone(item.weight) === tone);
-                const title = tone === 'positive' ? 'Suma' : tone === 'negative' ? 'Penaliza' : 'Neutras';
+                const items = criteria.weighted_signals.filter(
+                  (item) => weightTone(item.weight) === tone,
+                );
+                const title =
+                  tone === 'positive' ? 'Suma' : tone === 'negative' ? 'Penaliza' : 'Neutras';
 
                 return (
                   <div key={tone} className="space-y-3">
@@ -763,7 +778,11 @@ export default function CriteriaPage() {
                             onUpdate={(patch) =>
                               setCriteria((current) => ({
                                 ...current,
-                                weighted_signals: patchById(current.weighted_signals, item.id, patch),
+                                weighted_signals: patchById(
+                                  current.weighted_signals,
+                                  item.id,
+                                  patch,
+                                ),
                               }))
                             }
                             onRemove={() =>
@@ -776,7 +795,9 @@ export default function CriteriaPage() {
                         ))}
                       </div>
                     ) : (
-                      <EmptyStateLine text={`No hay señales en el bloque ${title.toLowerCase()}.`} />
+                      <EmptyStateLine
+                        text={`No hay señales en el bloque ${title.toLowerCase()}.`}
+                      />
                     )}
                   </div>
                 );

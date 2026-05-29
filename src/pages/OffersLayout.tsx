@@ -25,7 +25,7 @@ export default function OffersLayout() {
         <JobList />
       </div>
 
-      {(hasDetail || isDesktop) ? (
+      {hasDetail || isDesktop ? (
         <aside
           className={cn(
             'min-w-0 overflow-hidden border-l border-border bg-background',
