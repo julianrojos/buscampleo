@@ -1,13 +1,10 @@
+@import "tailwindcss";
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 @import '@fontsource-variable/noto-sans';
 @import '@fontsource-variable/roboto-slab';
 
-@tailwind base;
-
 @custom-variant dark (&:is(.dark *));
-@tailwind components;
-@tailwind utilities;
 
 :root {
   color-scheme: light;
