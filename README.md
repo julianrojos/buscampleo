@@ -1,5 +1,7 @@
 # Buscampleo
 
+🔗 **[Ver la app en vivo](https://julianrojos.github.io/buscampleo/)**
+
 Buscampleo es una aplicación web personal para centralizar, filtrar y priorizar ofertas de empleo orientadas a perfiles de diseño digital, UI, Design Systems y Design Engineering.
 
 La app está pensada como un radar de señal y no como un simple agregador. Su objetivo es ayudar a identificar qué ofertas merecen atención y por qué.
@@ -60,6 +62,20 @@ La app está pensada como un radar de señal y no como un simple agregador. Su o
 - `src/router`: configuración de rutas.
 - `src/types`: contratos de dominio.
 
+## Variables de entorno
+
+| Variable | Descripción | Requerida |
+|----------|-------------|-----------|
+| `VITE_SUPABASE_URL` | URL del proyecto Supabase | No (modo mock) |
+| `VITE_SUPABASE_ANON_KEY` | Clave pública anónima de Supabase | No (modo mock) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Solo para funciones serverless / Actions; nunca en el cliente | No |
+| `OPENAI_API_KEY` | API key compatible con OpenAI para el LLM de análisis | No |
+| `ANTHROPIC_API_KEY` | Alternativa al LLM con Anthropic | No |
+| `RESEND_API_KEY` | Servicio de envío de emails (Resend / SendGrid / Brevo) | No |
+| `EMAIL_FROM` | Dirección remitente para los emails | No |
+
+> Sin ninguna variable configurada la app arranca en modo mock con datos locales.
+
 ## Cómo arrancar
 
 ```bash
@@ -67,8 +83,6 @@ npm install
 cp .env.example .env   # edita los valores si quieres conectar Supabase o LLM
 npm run dev
 ```
-
-> Para desarrollo local con mocks, el archivo `.env` puede dejarse vacío.
 
 ## Scripts disponibles
 
