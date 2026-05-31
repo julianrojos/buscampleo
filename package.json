@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "db:types": "node scripts/generate-db-types.mjs",
     "scrape": "tsx scraper/index.ts",
-    "test": "node --import tsx --test $(rg --files src scraper api -g '*test.ts' | tr '\\n' ' ')",
+    "test": "node --import tsx --test $(rg --files src scraper -g '*test.ts' | tr '\\n' ' ')",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

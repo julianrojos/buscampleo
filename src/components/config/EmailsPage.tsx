@@ -16,6 +16,8 @@ import { getSettingsSnapshot } from '@/data/settings-repository';
 import useEmailLogs from '@/hooks/use-email-logs';
 import useSettings from '@/hooks/use-settings';
 import { useSession } from '@/lib/auth/session';
+import { hasSupabaseConfig } from '@/lib/runtime';
+import { getSupabaseEdgeFunctionUrl } from '@/lib/supabase/functions';
 import type { UserSettings } from '@/types/account';
 
 type EmailSettingsPanelProps = {
@@ -28,6 +30,7 @@ function EmailSettingsPanel({ initialSettings, isSaving, onSave }: EmailSettings
   const { data: logs = [] } = useEmailLogs();
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const canSendTestEmail = hasSupabaseConfig() && Boolean(session?.access_token);
   const [enabled, setEnabled] = useState(initialSettings.email_enabled);
   const [recipient, setRecipient] = useState(initialSettings.email_recipient);
   const [frequency, setFrequency] = useState(initialSettings.email_frequency);
@@ -54,11 +57,17 @@ function EmailSettingsPanel({ initialSettings, isSaving, onSave }: EmailSettings
   }
 
   async function handleTestEmail() {
+    if (!canSendTestEmail) {
+      setTestStatus('error');
+      setTestMessage('El email de prueba solo está disponible con Supabase configurado.');
+      return;
+    }
+
     setTestStatus('sending');
     setTestMessage(null);
 
     try {
-      const response = await fetch('/api/send-digest', {
+      const response = await fetch(getSupabaseEdgeFunctionUrl('send-digest'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -172,11 +181,16 @@ function EmailSettingsPanel({ initialSettings, isSaving, onSave }: EmailSettings
             type="button"
             variant="outline"
             onClick={() => void handleTestEmail()}
-            disabled={testStatus === 'sending'}
+            disabled={testStatus === 'sending' || !canSendTestEmail}
           >
             Enviar email de prueba
           </Button>
         </div>
+        {!canSendTestEmail ? (
+          <p className="text-xs text-muted-foreground">
+            Disponible solo cuando Supabase está configurado y la sesión está activa.
+          </p>
+        ) : null}
         {testMessage ? (
           <p
             className={

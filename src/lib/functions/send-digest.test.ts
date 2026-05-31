@@ -1,28 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import handler, { SendDigestBodySchema, selectDigestJobs } from './send-digest';
-
-function createResponse() {
-  const state: { statusCode: number | null; body: unknown } = {
-    statusCode: null,
-    body: null,
-  };
-  const response = {
-    status(code: number) {
-      state.statusCode = code;
-      return response;
-    },
-    json(body: unknown) {
-      state.body = body;
-    },
-  };
-
-  return {
-    state,
-    response,
-  };
-}
+import { SendDigestBodySchema, selectDigestJobs } from './send-digest';
 
 test('selectDigestJobs filters by hidden, analysis state, score and max jobs', () => {
   const jobs = [
@@ -132,13 +111,4 @@ test('selectDigestJobs excludes unanalyzed jobs when include_unanalyzed is false
 test('SendDigestBodySchema validates the payload contract', () => {
   assert.equal(SendDigestBodySchema.safeParse({ test: true }).success, true);
   assert.equal(SendDigestBodySchema.safeParse({ test: 'nope' }).success, false);
-});
-
-test('send-digest requires authorization', async () => {
-  const { state, response } = createResponse();
-
-  await handler({ method: 'POST', body: { test: true }, headers: {} }, response);
-
-  assert.equal(state.statusCode, 401);
-  assert.deepEqual(state.body, { error: 'Unauthorized' });
 });

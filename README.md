@@ -1,6 +1,6 @@
 # Buscampleo
 
-Buscampleo se despliega como app Vercel-first con Supabase como origen de datos. El build de GitHub Pages se mantiene como referencia histórica, pero ya no es el runtime principal.
+Buscampleo se despliega como una SPA estática en GitHub Pages con Supabase como origen de datos y Edge Functions para las operaciones sensibles.
 
 Buscampleo es una aplicación web personal para centralizar, filtrar y priorizar ofertas de empleo orientadas a perfiles de diseño digital, UI, Design Systems y Design Engineering.
 
@@ -66,7 +66,7 @@ La app está pensada como un radar de señal y no como un simple agregador. Su o
 - `src/router`: configuración de rutas.
 - `src/types`: contratos de dominio.
 - `scraper`: pipeline de ingestión y normalización.
-- `api`: endpoints serverless para análisis y digest.
+- `supabase/functions`: Edge Functions para análisis, comparación y digest.
 
 ## Variables de entorno
 
@@ -78,6 +78,7 @@ La app está pensada como un radar de señal y no como un simple agregador. Su o
 | `VITE_BASE_PATH` | Base pública del build, por defecto `/buscampleo/` | No |
 | `VITE_APP_MODE` | `auto` o `mock` para forzar fallback local | No |
 | `SUPABASE_SERVICE_ROLE_KEY` | Solo para funciones serverless / Actions; nunca en el cliente | No |
+| `ALLOWED_ORIGIN` | Orígenes permitidos para las Edge Functions de Supabase | No |
 | `OPENAI_API_KEY` | API key compatible con OpenAI para el LLM de análisis | No |
 | `ANTHROPIC_API_KEY` | Alternativa al LLM con Anthropic | No |
 | `RESEND_API_KEY` | Servicio de envío de emails (Resend / SendGrid / Brevo) | No |
@@ -111,4 +112,4 @@ npm run dev
 
 - La app usa un fallback mock/local cuando faltan las variables de backend.
 - El contenido de criterios se basa en el conocimiento curado del proyecto y vive como seed tipado.
-- El proyecto expone endpoints serverless para análisis y digest, y un scraper automatizable con GitHub Actions.
+- El proyecto expone Edge Functions en Supabase para análisis, comparación y digest, y un scraper automatizable con GitHub Actions.
