@@ -2,7 +2,7 @@ export type JobStatus = 'new' | 'seen' | 'saved' | 'hidden' | 'applied';
 
 export type JobModality = 'remote' | 'hybrid' | 'onsite' | 'unknown';
 
-export type JobAnalysisStatus = 'pending' | 'queued' | 'done' | 'error';
+export type JobAnalysisStatus = 'pending' | 'queued' | 'done' | 'error' | 'failed';
 
 export interface JobSignalGroup {
   readonly items: string[];
