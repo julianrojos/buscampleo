@@ -1,13 +1,13 @@
 import { X } from 'lucide-react';
 
 import useJobFilters from '@/hooks/use-job-filters';
-import { MOCK_SOURCES } from '@/data/mock-sources';
+import useSources from '@/hooks/use-sources';
 import { cn } from '@/lib/utils';
-
-const sourceNameById = new Map(MOCK_SOURCES.map((source) => [source.id, source.name]));
 
 export default function ActiveFilters() {
   const { filters, toggleFilter, removeFilter, resetFilters } = useJobFilters();
+  const { data: sources = [] } = useSources();
+  const sourceNameById = new Map(sources.map((source) => [source.id, source.name]));
 
   const chips = [
     filters.query

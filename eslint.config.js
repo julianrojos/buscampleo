@@ -10,6 +10,9 @@ const SERVER_ONLY_IMPORT_MESSAGE =
   'Use browser-safe APIs in src/. Move server-only logic to a backend service or a tool script.';
 
 const SERVER_ONLY_IMPORTS = [
+  '@anthropic-ai/sdk',
+  'pdf-parse',
+  'resend',
   'assert',
   'buffer',
   'child_process',
@@ -115,6 +118,12 @@ export default tseslint.config(
     rules: {
       ...reactRefresh.configs.vite.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+    },
+  },
+  {
+    files: ['**/*.{test,spec}.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-restricted-imports': 'off',
     },
   },
   eslintConfigPrettier,

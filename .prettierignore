@@ -1,6 +1,7 @@
 dist
 coverage
 node_modules
+supabase/.temp
 package-lock.json
 .agents
 README.md

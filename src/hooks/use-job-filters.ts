@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-import { VALID_SOURCE_IDS } from '@/data/mock-sources';
+import useSources from '@/hooks/use-sources';
 import type { JobFilters, SortDir, SortField, UseJobFiltersReturn } from '@/types/filter';
 import type { JobModality } from '@/types/job';
 
@@ -44,16 +44,16 @@ function parseArray(values: string[], allowed?: readonly string[]): string[] {
   return uniqueValues.filter((value) => allowed.includes(value));
 }
 
-function parseFilters(
+export function parseFilters(
   searchParams: URLSearchParams,
-  validSourceIds: readonly string[] = VALID_SOURCE_IDS,
+  allowedSourceIds?: readonly string[],
 ): JobFilters {
   const sort = searchParams.get('sort');
   const sortDir = searchParams.get('sort_dir');
 
   return {
     query: searchParams.get('q')?.trim() ?? '',
-    source: parseArray(searchParams.getAll('source'), validSourceIds),
+    source: parseArray(searchParams.getAll('source'), allowedSourceIds),
     modality: parseArray(searchParams.getAll('modality'), VALID_MODALITIES) as JobModality[],
     min_score: parseNumber(searchParams.get('min_score')),
     keywords: parseArray(searchParams.getAll('keywords')),
@@ -76,8 +76,20 @@ function setArrayValues(searchParams: URLSearchParams, key: string, values: stri
 
 export default function useJobFilters(): UseJobFiltersReturn {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { data: sources, isLoading: isSourcesLoading } = useSources();
 
-  const filters = useMemo(() => parseFilters(searchParams), [searchParams]);
+  const activeSourceIds = useMemo(() => {
+    if (isSourcesLoading || !sources) {
+      return undefined;
+    }
+
+    return sources.filter((source) => source.active).map((source) => source.id);
+  }, [isSourcesLoading, sources]);
+
+  const filters = useMemo(
+    () => parseFilters(searchParams, activeSourceIds),
+    [activeSourceIds, searchParams],
+  );
 
   function setFilter<K extends keyof JobFilters>(key: K, value: JobFilters[K]) {
     setSearchParams((previous) => {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,8 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Toggle } from '@/components/ui/toggle';
-import { DEFAULT_CRITERIA_CONFIG } from '@/data/criteria';
+import { getCriteriaConfigSnapshot } from '@/data/criteria-repository';
+import useCriteriaConfig from '@/hooks/use-criteria-config';
 import { cn } from '@/lib/utils';
 import type {
   ConditionalRuleCriterion,
@@ -489,7 +490,8 @@ function RoleChip({
 }
 
 export default function CriteriaPage() {
-  const [criteria, setCriteria] = useState(DEFAULT_CRITERIA_CONFIG);
+  const [criteria, setCriteria] = useState(() => getCriteriaConfigSnapshot());
+  const { saveCriteriaConfig } = useCriteriaConfig();
 
   const [hardExcludeDraft, setHardExcludeDraft] = useState({
     pattern: '',
@@ -508,6 +510,10 @@ export default function CriteriaPage() {
   const weightedCounts = countWeightedByTone(criteria.weighted_signals);
   const conditionalActive = countActive(criteria.conditional_rules);
   const rolesActive = countActive(criteria.target_roles);
+
+  useEffect(() => {
+    void saveCriteriaConfig(criteria);
+  }, [criteria, saveCriteriaConfig]);
 
   const addHardExclude = () => {
     const pattern = hardExcludeDraft.pattern.trim();

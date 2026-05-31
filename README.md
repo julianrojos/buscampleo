@@ -1,6 +1,6 @@
 # Buscampleo
 
-🔗 **[Ver la app en vivo](https://julianrojos.github.io/buscampleo/)**
+Buscampleo se despliega como una SPA estática en GitHub Pages con Supabase como origen de datos y Edge Functions para las operaciones sensibles.
 
 Buscampleo es una aplicación web personal para centralizar, filtrar y priorizar ofertas de empleo orientadas a perfiles de diseño digital, UI, Design Systems y Design Engineering.
 
@@ -16,6 +16,8 @@ La app está pensada como un radar de señal y no como un simple agregador. Su o
 - Editor de criterios con señales ponderadas, exclusiones duras y reglas condicionales.
 - Pantallas de perfil, emails, historial y ajustes.
 - Datos mockeados para desarrollo local.
+- Persistencia local/Supabase para jobs, fuentes, perfil, criterios, settings, matches y logs.
+- Autenticación privada opcional con Supabase Auth.
 - Diseño mobile-first con layout adaptativo en escritorio.
 
 ## Stack técnico
@@ -29,6 +31,8 @@ La app está pensada como un radar de señal y no como un simple agregador. Su o
 - React Router
 - Lucide React
 - Radix UI
+- Supabase JS
+- Zod
 
 ## Rutas principales
 
@@ -61,6 +65,8 @@ La app está pensada como un radar de señal y no como un simple agregador. Su o
 - `src/pages`: layouts de página.
 - `src/router`: configuración de rutas.
 - `src/types`: contratos de dominio.
+- `scraper`: pipeline de ingestión y normalización.
+- `supabase/functions`: Edge Functions para análisis, comparación y digest.
 
 ## Variables de entorno
 
@@ -68,7 +74,11 @@ La app está pensada como un radar de señal y no como un simple agregador. Su o
 |----------|-------------|-----------|
 | `VITE_SUPABASE_URL` | URL del proyecto Supabase | No (modo mock) |
 | `VITE_SUPABASE_ANON_KEY` | Clave pública anónima de Supabase | No (modo mock) |
+| `VITE_ALLOWED_EMAIL` | Email permitido en el acceso privado | No |
+| `VITE_BASE_PATH` | Base pública del build, por defecto `/buscampleo/` | No |
+| `VITE_APP_MODE` | `auto` o `mock` para forzar fallback local | No |
 | `SUPABASE_SERVICE_ROLE_KEY` | Solo para funciones serverless / Actions; nunca en el cliente | No |
+| `ALLOWED_ORIGIN` | Orígenes permitidos para las Edge Functions de Supabase | No |
 | `OPENAI_API_KEY` | API key compatible con OpenAI para el LLM de análisis | No |
 | `ANTHROPIC_API_KEY` | Alternativa al LLM con Anthropic | No |
 | `RESEND_API_KEY` | Servicio de envío de emails (Resend / SendGrid / Brevo) | No |
@@ -89,6 +99,9 @@ npm run dev
 - `npm run dev`: arranque en desarrollo.
 - `npm run build`: build de producción.
 - `npm run preview`: previsualización del build.
+- `npm run db:types`: regenera `src/lib/supabase/database.types.ts` con Supabase CLI enlazado.
+- `npm run scrape`: ejecuta el scraper TypeScript.
+- `npm test`: corre la suite `node:test` con `tsx`.
 - `npm run typecheck`: ejecuta `tsc --noEmit`.
 - `npm run lint`: revisa el código con ESLint.
 - `npm run lint:fix`: corrige automáticamente los avisos arreglables de ESLint.
@@ -97,6 +110,6 @@ npm run dev
 
 ## Notas
 
-- La app usa datos mockeados; no depende todavía de Supabase ni de un backend real.
+- La app usa un fallback mock/local cuando faltan las variables de backend.
 - El contenido de criterios se basa en el conocimiento curado del proyecto y vive como seed tipado.
-- El proyecto está preparado para evolucionar hacia persistencia y automatización sin rehacer el shell de UI.
+- El proyecto expone Edge Functions en Supabase para análisis, comparación y digest, y un scraper automatizable con GitHub Actions.
