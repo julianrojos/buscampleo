@@ -9,54 +9,7 @@ import {
 } from '@/components/ui/table';
 import type { ScrapingRun } from '@/types/scraping';
 import { cn } from '@/lib/utils';
-
-const MOCK_RUNS = [
-  {
-    id: 'run-001',
-    started_at: '2026-05-29T08:00:00.000Z',
-    finished_at: '2026-05-29T08:04:00.000Z',
-    status: 'success',
-    total_sources: 9,
-    successful_sources: 9,
-    failed_sources: 0,
-    jobs_found: 42,
-    jobs_inserted: 8,
-    jobs_updated: 11,
-    error_summary: null,
-    duration_ms: 240000,
-    created_at: '2026-05-29T08:05:00.000Z',
-  },
-  {
-    id: 'run-002',
-    started_at: '2026-05-28T08:00:00.000Z',
-    finished_at: '2026-05-28T08:05:00.000Z',
-    status: 'partial',
-    total_sources: 9,
-    successful_sources: 8,
-    failed_sources: 1,
-    jobs_found: 35,
-    jobs_inserted: 6,
-    jobs_updated: 9,
-    error_summary: 'Fallback HTML parser triggered for Lever Direct.',
-    duration_ms: 300000,
-    created_at: '2026-05-28T08:06:00.000Z',
-  },
-  {
-    id: 'run-003',
-    started_at: '2026-05-27T08:00:00.000Z',
-    finished_at: '2026-05-27T08:08:00.000Z',
-    status: 'failed',
-    total_sources: 9,
-    successful_sources: 6,
-    failed_sources: 3,
-    jobs_found: 11,
-    jobs_inserted: 2,
-    jobs_updated: 3,
-    error_summary: 'Several sources returned 429 after rate limiting.',
-    duration_ms: 480000,
-    created_at: '2026-05-27T08:08:30.000Z',
-  },
-] satisfies readonly ScrapingRun[];
+import useScrapingRuns from '@/hooks/use-scraping-runs';
 
 function RunStatusBadge({ status }: { readonly status: ScrapingRun['status'] }) {
   const labels = {
@@ -82,6 +35,8 @@ function RunStatusBadge({ status }: { readonly status: ScrapingRun['status'] }) 
 }
 
 export default function HistorialPage() {
+  const { data: runs = [] } = useScrapingRuns();
+
   return (
     <div className="h-full overflow-y-auto px-4 py-4 lg:px-6">
       <div className="space-y-4">
@@ -104,7 +59,7 @@ export default function HistorialPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {MOCK_RUNS.map((run) => (
+            {runs.map((run) => (
               <TableRow key={run.id}>
                 <TableCell>{run.started_at}</TableCell>
                 <TableCell>

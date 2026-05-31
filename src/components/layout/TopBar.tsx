@@ -1,8 +1,12 @@
-import { NavLink, useLocation } from 'react-router-dom';
-import { Search } from 'lucide-react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { LogOut, Search } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 
 import StatusIndicator from '@/components/layout/StatusIndicator';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { signOut, useSession } from '@/lib/auth/session';
+import { shouldRequireAuth } from '@/lib/runtime';
 import useJobFilters from '@/hooks/use-job-filters';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +22,9 @@ const navItems = [
 export default function TopBar() {
   const { filters, setFilter } = useJobFilters();
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
   const showSearch = pathname.startsWith('/ofertas');
   const searchId = 'topbar-search';
 
@@ -73,6 +80,21 @@ export default function TopBar() {
             <div className="hidden lg:flex">
               <StatusIndicator />
             </div>
+            {shouldRequireAuth() && session?.user ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  await signOut();
+                  await queryClient.invalidateQueries({ queryKey: ['auth', 'session'] });
+                  navigate('/login', { replace: true });
+                }}
+              >
+                <LogOut className="size-3.5" />
+                Salir
+              </Button>
+            ) : null}
           </div>
         ) : (
           <div className="hidden lg:flex lg:justify-end">

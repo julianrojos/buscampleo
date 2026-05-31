@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import ActiveFilters from '@/components/filters/ActiveFilters';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -11,8 +13,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import useSources from '@/hooks/use-sources';
 import useJobFilters from '@/hooks/use-job-filters';
-import { MOCK_SOURCES } from '@/data/mock-sources';
 
 const MODALITY_OPTIONS = [
   { value: 'remote', label: 'Remoto' },
@@ -31,10 +33,23 @@ const SORT_OPTIONS = [
 
 export function FilterFields() {
   const { filters, setFilter, toggleFilter, resetFilters } = useJobFilters();
+  const { data: sources = [] } = useSources();
+  const [keywordDraft, setKeywordDraft] = useState('');
   const queryId = 'filters-query';
   const minScoreId = 'filters-min-score';
+  const keywordId = 'filters-keyword';
   const sortId = 'filters-sort';
   const sortDirId = 'filters-sort-dir';
+
+  function addKeywordFilter() {
+    const nextKeyword = keywordDraft.trim();
+    if (!nextKeyword) {
+      return;
+    }
+
+    toggleFilter('keywords', nextKeyword);
+    setKeywordDraft('');
+  }
 
   return (
     <div className="space-y-5">
@@ -53,10 +68,34 @@ export function FilterFields() {
 
       <section className="space-y-2">
         <span className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+          Keywords
+        </span>
+        <div className="flex items-center gap-2">
+          <Input
+            id={keywordId}
+            aria-label="Añadir keyword"
+            value={keywordDraft}
+            onChange={(event) => setKeywordDraft(event.target.value)}
+            placeholder="design systems, css, figma..."
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                addKeywordFilter();
+              }
+            }}
+          />
+          <Button type="button" variant="outline" onClick={addKeywordFilter}>
+            Añadir
+          </Button>
+        </div>
+      </section>
+
+      <section className="space-y-2">
+        <span className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
           Fuente
         </span>
         <div className="space-y-2">
-          {MOCK_SOURCES.map((source) => (
+          {sources.map((source) => (
             <label key={source.id} className="flex cursor-pointer items-center gap-2 text-sm">
               <Checkbox
                 checked={filters.source.includes(source.id)}

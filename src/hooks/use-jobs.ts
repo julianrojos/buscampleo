@@ -1,14 +1,8 @@
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 
-import { getJobStore } from '@/data/job-store';
+import { listJobs } from '@/data/job-repository';
 import type { Job } from '@/types/job';
 import type { JobFilters } from '@/types/filter';
-
-function delay(ms: number) {
-  return new Promise<void>((resolve) => {
-    window.setTimeout(resolve, ms);
-  });
-}
 
 function matchText(job: Job, query: string): boolean {
   if (!query.trim()) {
@@ -123,10 +117,7 @@ function applyFilters(jobs: Job[], filters: JobFilters): Job[] {
 export default function useJobs(filters: JobFilters): UseQueryResult<Job[]> {
   return useQuery({
     queryKey: ['jobs', filters],
-    queryFn: async () => {
-      await delay(300);
-      return applyFilters([...getJobStore()], filters);
-    },
+    queryFn: async () => applyFilters(await listJobs(), filters),
     placeholderData: (previousData) => previousData,
   });
 }

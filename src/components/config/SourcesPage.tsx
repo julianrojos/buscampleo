@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -11,7 +9,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Toggle } from '@/components/ui/toggle';
-import { MOCK_SOURCES } from '@/data/mock-sources';
+import useSources from '@/hooks/use-sources';
+import {
+  createSource,
+  deleteSource,
+  setSourceActive,
+  updateSourceRunInfo,
+} from '@/data/source-repository';
 import { cn } from '@/lib/utils';
 
 function SourceHealthIndicator({ failures }: { readonly failures: number }) {
@@ -37,7 +41,32 @@ function SourceHealthIndicator({ failures }: { readonly failures: number }) {
 }
 
 export default function SourcesPage() {
-  const [sources, setSources] = useState(() => MOCK_SOURCES);
+  const { data: sources = [], isLoading, refetch } = useSources();
+
+  async function handleAddSource() {
+    const name = window.prompt('Nombre de la fuente');
+    const url = window.prompt('URL de la fuente');
+
+    if (!name || !url) {
+      return;
+    }
+
+    await createSource({
+      name,
+      url,
+      type: 'manual',
+      category: 'generalist',
+      active: true,
+      priority: 5,
+      parser_key: null,
+      last_success_at: null,
+      last_error_at: null,
+      consecutive_failures: 0,
+      offers_found: 0,
+      notes: null,
+    });
+    await refetch();
+  }
 
   return (
     <div className="h-full overflow-y-auto px-4 py-4 lg:px-6">
@@ -49,7 +78,9 @@ export default function SourcesPage() {
               Gestiona las fuentes desde las que Buscampleo rastrea ofertas.
             </p>
           </div>
-          <Button type="button">Añadir fuente</Button>
+          <Button type="button" onClick={() => void handleAddSource()}>
+            Añadir fuente
+          </Button>
         </div>
 
         <Table>
@@ -65,41 +96,63 @@ export default function SourcesPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sources.map((source) => (
-              <TableRow key={source.id}>
-                <TableCell>{source.name}</TableCell>
-                <TableCell>{source.type}</TableCell>
-                <TableCell>{source.category}</TableCell>
-                <TableCell>
-                  <SourceHealthIndicator failures={source.consecutive_failures} />
-                </TableCell>
-                <TableCell>{source.last_success_at ?? 'Sin éxito'}</TableCell>
-                <TableCell>{source.offers_found}</TableCell>
-                <TableCell>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Toggle
-                      pressed={source.active}
-                      onPressedChange={() =>
-                        setSources((current) =>
-                          current.map((item) =>
-                            item.id === source.id ? { ...item, active: !item.active } : item,
-                          ),
-                        )
-                      }
-                      size="sm"
-                    >
-                      {source.active ? 'Activa' : 'Inactiva'}
-                    </Toggle>
-                    <Button type="button" variant="outline" size="sm">
-                      Editar
-                    </Button>
-                    <Button type="button" variant="outline" size="sm">
-                      Probar
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+            {!isLoading &&
+              sources.map((source) => (
+                <TableRow key={source.id}>
+                  <TableCell>{source.name}</TableCell>
+                  <TableCell>{source.type}</TableCell>
+                  <TableCell>{source.category}</TableCell>
+                  <TableCell>
+                    <SourceHealthIndicator failures={source.consecutive_failures} />
+                  </TableCell>
+                  <TableCell>{source.last_success_at ?? 'Sin éxito'}</TableCell>
+                  <TableCell>{source.offers_found}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Toggle
+                        pressed={source.active}
+                        onPressedChange={async () => {
+                          await setSourceActive(source.id, !source.active);
+                          await refetch();
+                        }}
+                        size="sm"
+                      >
+                        {source.active ? 'Activa' : 'Inactiva'}
+                      </Toggle>
+                      <Button type="button" variant="outline" size="sm">
+                        Editar
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          await updateSourceRunInfo(source.id, {
+                            last_success_at: new Date().toISOString(),
+                            last_error_at: null,
+                            consecutive_failures: 0,
+                            offers_found: source.offers_found + 1,
+                          });
+                          await refetch();
+                        }}
+                      >
+                        Probar
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={async () => {
+                          await deleteSource(source.id);
+                          await refetch();
+                        }}
+                      >
+                        Borrar
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </div>

@@ -18,6 +18,8 @@ export default function JobList() {
   const activeId = params.id;
   const parentRef = useRef<HTMLDivElement>(null);
 
+  // TanStack Virtual intentionally returns non-memoizable helpers here.
+  // eslint-disable-next-line react-hooks/incompatible-library
   const rowVirtualizer = useVirtualizer({
     count: jobs.length,
     getScrollElement: () => parentRef.current,

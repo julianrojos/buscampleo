@@ -9,6 +9,7 @@ import SignalChips from '@/components/jobs/SignalChips';
 import StatusBadge from '@/components/jobs/StatusBadge';
 import useJobActions from '@/hooks/use-job-actions';
 import useJobDetail from '@/hooks/use-job-detail';
+import useJobMatch from '@/hooks/use-job-match';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 
@@ -26,6 +27,7 @@ export default function JobDetailPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { data: job, isLoading, isError, error } = useJobDetail(id);
+  const { data: match } = useJobMatch(id);
   const { save, unsave, apply, markRead } = useJobActions();
 
   const search = searchParams.toString();
@@ -115,7 +117,7 @@ export default function JobDetailPage() {
         <section className="space-y-2">
           <SectionTitle>Resumen rápido</SectionTitle>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            {job.summary ?? 'No hay resumen generado todavía.'}
+            {match?.summary ?? job.summary ?? 'No hay resumen generado todavía.'}
           </p>
         </section>
 
@@ -140,6 +142,34 @@ export default function JobDetailPage() {
             ))}
           </div>
         </section>
+
+        {match ? (
+          <section className="space-y-3">
+            <SectionTitle>Match persistido</SectionTitle>
+            <div className="grid gap-4 rounded-none border border-border p-4 lg:grid-cols-3">
+              <div className="space-y-2">
+                <h3 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+                  Fortalezas
+                </h3>
+                <SignalChips signals={match.strengths} max={6} />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+                  Gaps
+                </h3>
+                <RedFlagList flags={match.gaps} />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+                  Recomendaciones
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {match.recommendations[0] ?? 'Sin recomendaciones.'}
+                </p>
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         <section className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-3">
