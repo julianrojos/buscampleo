@@ -1,9 +1,11 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.106.2';
 
+import { DEFAULT_CRITERIA_CONFIG, CriteriaConfigSchema } from '../../../src/lib/criteria-config.ts';
 import { createRecordId } from '../../../src/data/id.ts';
 import { resolveJobByIdRow } from '../../../src/lib/supabase/job-lookup.ts';
 import type { Database, Json } from '../../../src/lib/supabase/database.types.ts';
 import type { EmailLog, JobMatch, UserProfile, UserSettings } from '../../../src/types/account.ts';
+import type { CriteriaConfig } from '../../../src/types/criteria.ts';
 import type { Job } from '../../../src/types/job.ts';
 
 type RemoteAccessOptions = {
@@ -20,6 +22,8 @@ type ProfileRow = Database['public']['Tables']['user_profile']['Row'];
 type ProfileInsert = Database['public']['Tables']['user_profile']['Insert'];
 type SettingsRow = Database['public']['Tables']['settings']['Row'];
 type SettingsInsert = Database['public']['Tables']['settings']['Insert'];
+
+const CRITERIA_SETTING_KEY = 'criteria_config';
 
 function readEnv(...keys: readonly string[]): string {
   for (const key of keys) {
@@ -475,6 +479,47 @@ export async function getSettings(authToken?: string | null): Promise<UserSettin
   }
 
   return mapRowToSettings(insertResult.data as SettingsRow);
+}
+
+export async function getCriteriaConfig(authToken?: string | null): Promise<CriteriaConfig> {
+  const client = createEdgeSupabaseClient(authToken);
+  if (!client) {
+    return DEFAULT_CRITERIA_CONFIG;
+  }
+
+  const { data, error } = await client
+    .from('settings')
+    .select('*')
+    .eq('key', CRITERIA_SETTING_KEY)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`db.criteria.read_failed: ${error.message}`);
+  }
+
+  if (data) {
+    const parsed = CriteriaConfigSchema.safeParse(data.value);
+    if (parsed.success) {
+      return parsed.data;
+    }
+    return DEFAULT_CRITERIA_CONFIG;
+  }
+
+  const insertResult = await client
+    .from('settings')
+    .insert({
+      key: CRITERIA_SETTING_KEY,
+      value: DEFAULT_CRITERIA_CONFIG,
+    } satisfies SettingsInsert)
+    .select('*')
+    .maybeSingle();
+
+  if (insertResult.error || !insertResult.data) {
+    return DEFAULT_CRITERIA_CONFIG;
+  }
+
+  const parsed = CriteriaConfigSchema.safeParse((insertResult.data as SettingsRow).value);
+  return parsed.success ? parsed.data : DEFAULT_CRITERIA_CONFIG;
 }
 
 export async function listEmailLogs(authToken?: string | null): Promise<EmailLog[]> {

@@ -1,5 +1,5 @@
-import type { CriteriaConfig, HardExcludeCriterion, WeightedSignalCriterion } from '@/types/criteria';
-import type { Job } from '@/types/job';
+import type { CriteriaConfig, HardExcludeCriterion, WeightedSignalCriterion } from '../types/criteria';
+import type { Job } from '../types/job';
 
 export function normalizeSearchText(value: string): string {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -7,7 +7,7 @@ export function normalizeSearchText(value: string): string {
 
 function splitCriterionPattern(pattern: string): string[] {
   return normalizeSearchText(pattern)
-    .split(/\s*[\/|]\s*/g)
+    .split(/\s*[/|]\s*/g)
     .map((part) => part.trim())
     .filter(Boolean);
 }
