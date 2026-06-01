@@ -77,12 +77,14 @@ La app está pensada como un radar de señal y no como un simple agregador. Su o
 | `VITE_ALLOWED_EMAIL` | Email permitido en el acceso privado | No |
 | `VITE_BASE_PATH` | Base pública del build, por defecto `/buscampleo/` | No |
 | `VITE_APP_MODE` | `auto` o `mock` para forzar fallback local | No |
+| `SUPABASE_URL` | URL de Supabase para Edge Functions / GitHub Actions | No |
+| `SUPABASE_ANON_KEY` | Clave anónima de Supabase para Edge Functions / GitHub Actions | No |
 | `SUPABASE_SERVICE_ROLE_KEY` | Solo para funciones serverless / Actions; nunca en el cliente | No |
 | `ALLOWED_ORIGIN` | Orígenes permitidos para las Edge Functions de Supabase | No |
-| `OPENAI_API_KEY` | API key compatible con OpenAI para el LLM de análisis | No |
-| `ANTHROPIC_API_KEY` | Alternativa al LLM con Anthropic | No |
-| `RESEND_API_KEY` | Servicio de envío de emails (Resend / SendGrid / Brevo) | No |
-| `EMAIL_FROM` | Dirección remitente para los emails | No |
+| `OPENROUTER_API_KEY` | API key de OpenRouter para el análisis LLM | No |
+| `OPENROUTER_MODEL` | Modelo por defecto para OpenRouter, por ejemplo `anthropic/claude-haiku-4-5` | No |
+| `RESEND_API_KEY` | API key de Resend para el envío de emails transaccionales | No |
+| `EMAIL_FROM` | Dirección remitente verificada en Resend; `onboarding@resend.dev` sirve para empezar | No |
 
 > Sin ninguna variable configurada la app arranca en modo mock con datos locales.
 

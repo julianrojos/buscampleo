@@ -1,17 +1,23 @@
 import {
   DigestSelectionSettings,
-  DigestJobCandidate,
   SendDigestBodySchema,
+  renderDigestEmail,
   selectDigestJobs,
 } from '../../../src/lib/functions/send-digest.ts';
-import { addEmailLog, getSettings, listJobs, verifySupabaseSession } from '../_shared/data.ts';
+import {
+  addEmailLog,
+  getSettings,
+  listJobs,
+  verifySupabaseSession,
+} from '../_shared/data.ts';
+import { hasTransactionalEmailConfig, sendTransactionalEmail } from '../_shared/email.ts';
 import { getBearerToken, jsonResponse, optionsResponse } from '../_shared/http.ts';
 
 type SendDigestBody = {
   readonly test?: boolean;
 };
 
-export { SendDigestBodySchema, selectDigestJobs };
+export { SendDigestBodySchema, selectDigestJobs, renderDigestEmail };
 
 export default async function handler(request: Request): Promise<Response> {
   if (request.method === 'OPTIONS') {
@@ -36,25 +42,93 @@ export default async function handler(request: Request): Promise<Response> {
 
     const settings = await getSettings(authToken);
     const jobs = await listJobs(authToken);
-    const selectedJobs = selectDigestJobs(
-      jobs as DigestJobCandidate[],
-      settings as DigestSelectionSettings,
-    );
-    const shouldSend = bodyResult.data.test || (selectedJobs.length > 0 && settings.email_enabled);
-    const sentAt = shouldSend ? new Date().toISOString() : null;
+    const selectedJobs = selectDigestJobs(jobs, settings as DigestSelectionSettings);
+    const digest = renderDigestEmail(selectedJobs, settings as DigestSelectionSettings, {
+      test: bodyResult.data.test,
+    });
+    const recipient = settings.email_recipient.trim();
+    const hasProvider = hasTransactionalEmailConfig();
+    const canSend =
+      Boolean(recipient) &&
+      hasProvider &&
+      (bodyResult.data.test || (settings.email_enabled && selectedJobs.length > 0));
+
+    if (!canSend) {
+      await addEmailLog(
+        {
+          owner_id: settings.owner_id,
+          status: 'skipped',
+          provider: 'preview',
+          recipient_email: recipient || 'pending@example.com',
+          subject: digest.subject,
+          jobs_included: digest.jobs.map((job) => job.id),
+          payload: {
+            test: Boolean(bodyResult.data.test),
+            selectedCount: selectedJobs.length,
+            reason: !recipient
+              ? 'Missing recipient'
+              : !hasProvider
+                ? 'Transactional email provider not configured'
+              : !settings.email_enabled
+                ? 'Digest disabled'
+                : 'No eligible jobs',
+          },
+          provider_message_id: null,
+          error_message: !recipient
+            ? 'Missing recipient email.'
+            : !hasProvider
+              ? 'Transactional email provider not configured.'
+            : !settings.email_enabled
+              ? 'Digest disabled.'
+              : 'No eligible jobs.',
+          sent_at: null,
+        },
+        authToken,
+      );
+
+      return jsonResponse(
+        {
+          ok: true,
+          sent: false,
+          skipped: true,
+          selected: selectedJobs.length,
+          subject: digest.subject,
+          reason: !recipient
+            ? 'Missing recipient email.'
+            : !hasProvider
+              ? 'Transactional email provider not configured.'
+            : !settings.email_enabled
+              ? 'Digest disabled.'
+              : 'No eligible jobs.',
+        },
+        request,
+      );
+    }
+
+    const emailResult = await sendTransactionalEmail({
+      to: recipient,
+      subject: digest.subject,
+      html: digest.html,
+      text: digest.text,
+    });
 
     await addEmailLog(
       {
         owner_id: settings.owner_id,
-        status: sentAt ? 'sent' : 'skipped',
-        provider: 'supabase-edge',
-        recipient_email: settings.email_recipient || 'pending@example.com',
-        subject: bodyResult.data.test ? 'Buscampleo - email de prueba' : 'Buscampleo digest',
-        jobs_included: selectedJobs.map((job) => job.id),
-        payload: { selectedCount: selectedJobs.length },
-        provider_message_id: null,
-        error_message: sentAt ? null : 'No eligible jobs or digest disabled.',
-        sent_at: sentAt,
+        status: 'sent',
+        provider: emailResult.provider,
+        recipient_email: recipient,
+        subject: digest.subject,
+        jobs_included: digest.jobs.map((job) => job.id),
+        payload: {
+          test: Boolean(bodyResult.data.test),
+          selectedCount: selectedJobs.length,
+          subject: digest.subject,
+          htmlPreview: digest.html.slice(0, 1000),
+        },
+        provider_message_id: emailResult.providerMessageId,
+        error_message: null,
+        sent_at: new Date().toISOString(),
       },
       authToken,
     );
@@ -62,8 +136,11 @@ export default async function handler(request: Request): Promise<Response> {
     return jsonResponse(
       {
         ok: true,
+        sent: true,
         selected: selectedJobs.length,
-        sent: Boolean(sentAt),
+        subject: digest.subject,
+        provider: emailResult.provider,
+        providerMessageId: emailResult.providerMessageId,
       },
       request,
     );

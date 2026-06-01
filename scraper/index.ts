@@ -1,6 +1,6 @@
 import { addScrapingRun } from '@/data/scraping-run-repository';
 import { listJobs, replaceJobs } from '@/data/job-repository';
-import { listSources } from '@/data/source-repository';
+import { listSources, updateSourceRunInfo } from '@/data/source-repository';
 import { dedupeJobs } from './utils/normalize';
 import { apiParser } from './sources/api';
 import { atsParser } from './sources/ats';
@@ -46,7 +46,37 @@ async function runScraper() {
         });
       }
       successfulSources += 1;
+      await updateSourceRunInfo(
+        source.id,
+        {
+          last_success_at: nowIso(),
+          last_error_at: null,
+          consecutive_failures: 0,
+          offers_found: bundles.length,
+        },
+        remoteAccess,
+      ).catch((error) => {
+        console.warn('[scraper] source health update failed', {
+          source: source.id,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
     } catch {
+      await updateSourceRunInfo(
+        source.id,
+        {
+          last_success_at: source.last_success_at,
+          last_error_at: nowIso(),
+          consecutive_failures: source.consecutive_failures + 1,
+          offers_found: source.offers_found,
+        },
+        remoteAccess,
+      ).catch((error) => {
+        console.warn('[scraper] source error update failed', {
+          source: source.id,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
       failedSources += 1;
     }
   }

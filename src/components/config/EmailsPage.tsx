@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useMemo } from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -83,8 +84,20 @@ function EmailSettingsPanel({ initialSettings, isSaving, onSave }: EmailSettings
         throw new Error(body?.error ?? 'No se pudo enviar el email de prueba.');
       }
 
+      const body = (await response.json().catch(() => null)) as {
+        readonly sent?: boolean;
+        readonly skipped?: boolean;
+        readonly reason?: string;
+      } | null;
+
       setTestStatus('success');
-      setTestMessage('Se registró el email de prueba correctamente.');
+      setTestMessage(
+        body?.sent
+          ? 'Se envió el email de prueba correctamente.'
+          : body?.skipped
+            ? `Se registró el intento, pero no se envió: ${body.reason ?? 'configuración incompleta.'}`
+            : 'Se registró el email de prueba correctamente.',
+      );
       void queryClient.invalidateQueries({ queryKey: ['email-logs'] });
     } catch (error) {
       setTestStatus('error');
@@ -229,7 +242,8 @@ function EmailSettingsPanel({ initialSettings, isSaving, onSave }: EmailSettings
 
 export default function EmailsPage() {
   const { saveSettings, data: settingsData, isLoading } = useSettings();
-  const initialSettings = settingsData ?? getSettingsSnapshot();
+  const fallbackSettings = useMemo(() => getSettingsSnapshot(), []);
+  const initialSettings = settingsData ?? fallbackSettings;
 
   return (
     <div className="h-full overflow-y-auto px-4 py-4 lg:px-6">
