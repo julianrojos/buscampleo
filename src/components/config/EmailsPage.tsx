@@ -237,7 +237,7 @@ export default function EmailsPage() {
         <div className="space-y-1">
           <h1 className="font-heading text-2xl font-semibold tracking-wide uppercase">Emails</h1>
           <p className="text-sm text-muted-foreground">
-            Configura los digests por correo y cómo se priorizan.
+            Configura los envíos por correo y cómo se priorizan.
           </p>
         </div>
 

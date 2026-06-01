@@ -1,6 +1,7 @@
 import { cva } from 'class-variance-authority';
 
 import { Badge } from '@/components/ui/badge';
+import { JOB_STATUS_LABELS } from '@/lib/job-status';
 import type { JobStatus } from '@/types/job';
 import { cn } from '@/lib/utils';
 
@@ -22,14 +23,6 @@ const statusBadgeVariants = cva(
   },
 );
 
-const statusLabels = {
-  new: 'Nueva',
-  seen: 'Leída',
-  saved: 'Guardada',
-  hidden: 'Oculta',
-  applied: 'Aplicada',
-} as const;
-
 interface StatusBadgeProps {
   readonly status: JobStatus;
   readonly className?: string;
@@ -38,7 +31,7 @@ interface StatusBadgeProps {
 export default function StatusBadge({ status, className }: StatusBadgeProps) {
   return (
     <Badge className={cn(statusBadgeVariants({ tone: status }), className)}>
-      {statusLabels[status]}
+      {JOB_STATUS_LABELS[status]}
     </Badge>
   );
 }

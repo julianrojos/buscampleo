@@ -7,7 +7,7 @@ const items = [
   {
     to: '/criterios',
     title: 'Criterios',
-    description: 'Señales ponderadas, exclusiones duras y reglas condicionales.',
+    description: 'Señales, exclusiones y reglas condicionales.',
     icon: FileSliders,
   },
   {

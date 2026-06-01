@@ -72,7 +72,7 @@ export default function JobList() {
         <div className="mt-4">
           <EmptyState
             title="No hay resultados"
-            description="Prueba a relajar los filtros o limpiar la búsqueda."
+            description="Prueba a relajar los filtros, limpiar la búsqueda o mostrar las ocultas por criterios."
             action={
               <button
                 type="button"

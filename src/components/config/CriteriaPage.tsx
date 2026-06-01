@@ -241,13 +241,13 @@ function HardExcludeRow({
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
             <Badge className="border border-danger/30 bg-danger/10 text-danger">
-              Exclusión dura
+              Exclusión
             </Badge>
             <Badge variant="secondary">{CATEGORY_LABELS[item.category]}</Badge>
             <Badge variant="secondary">{item.active ? 'Activa' : 'Inactiva'}</Badge>
           </div>
           <p className="text-sm text-muted-foreground">
-            Estas reglas eliminan la oferta del radar.
+            Esta regla elimina la oferta del radar.
           </p>
         </div>
         <Toggle pressed={item.active} onPressedChange={onToggle} variant="outline" size="sm">
@@ -575,8 +575,8 @@ export default function CriteriaPage() {
         <div className="space-y-2">
           <h1 className="font-heading text-2xl font-semibold tracking-wide uppercase">Criterios</h1>
           <p className="max-w-3xl text-sm text-muted-foreground">
-            Editor declarativo de señales y reglas. La prioridad es descartar poco, puntuar con
-            explicación y reservar las reglas condicionales para cortafuegos claros.
+            Editor de criterios y reglas. La prioridad es descartar poco, puntuar con explicación
+            y reservar las reglas condicionales para cortafuegos claros.
           </p>
         </div>
 
@@ -604,7 +604,7 @@ export default function CriteriaPage() {
         </div>
 
         <SectionShell
-          title="Exclusiones duras"
+          title="Exclusiones"
           badge={`${hardExcludeActive}/${criteria.hard_excludes.length}`}
           tone="danger"
           description="Estas reglas eliminan la oferta del radar. Deben ser pocas, claras y difíciles de confundir con una simple penalización."
@@ -675,9 +675,9 @@ export default function CriteriaPage() {
         </SectionShell>
 
         <SectionShell
-          title="Señales ponderadas"
+          title="Señales"
           badge={`${weightedActive}/${criteria.weighted_signals.length}`}
-          description="Un solo array, polaridad por signo y explicación visible. El usuario puede ajustar peso, categoría y texto explicativo sin perder la trazabilidad."
+          description="Señales manuales con polaridad por signo y explicación visible. El usuario puede ajustar peso, categoría y texto sin perder trazabilidad."
         >
           <div className="space-y-4">
             <div className="grid gap-3 rounded-none border border-border bg-background p-3 lg:grid-cols-[1fr_0.8fr_0.6fr_auto]">
@@ -801,9 +801,7 @@ export default function CriteriaPage() {
                         ))}
                       </div>
                     ) : (
-                      <EmptyStateLine
-                        text={`No hay señales en el bloque ${title.toLowerCase()}.`}
-                      />
+                  <EmptyStateLine text={`No hay señales en el bloque ${title.toLowerCase()}.`} />
                     )}
                   </div>
                 );

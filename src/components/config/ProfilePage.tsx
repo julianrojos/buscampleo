@@ -125,7 +125,7 @@ function ProfileEditor({ initialProfile, isSaving, onSave, onClearCv }: ProfileE
               <p>{cvText || 'Texto pendiente de extracción y almacenamiento privado.'}</p>
             </div>
           ) : (
-            'Aquí se mostrará el texto extraído del CV una vez procesado.'
+            'Aquí se mostrará el texto procesado del CV una vez cargado.'
           )}
         </div>
         <div className="flex flex-wrap gap-2">
@@ -160,7 +160,7 @@ export default function ProfilePage() {
         <div className="space-y-1">
           <h1 className="font-heading text-2xl font-semibold tracking-wide uppercase">Perfil</h1>
           <p className="text-sm text-muted-foreground">
-            Configura el perfil profesional que se usará para comparar ofertas.
+            Configura el perfil profesional que se usará para comparar ofertas y señales.
           </p>
         </div>
 

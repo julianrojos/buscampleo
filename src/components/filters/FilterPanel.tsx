@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import ActiveFilters from '@/components/filters/ActiveFilters';
 import { Button } from '@/components/ui/button';
@@ -13,8 +13,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import useCriteriaConfig from '@/hooks/use-criteria-config';
 import useSources from '@/hooks/use-sources';
 import useJobFilters from '@/hooks/use-job-filters';
+import { JOB_STATUS_OPTIONS } from '@/lib/job-status';
+import { getActiveWeightedSignals } from '@/lib/job-criteria';
+import { cn } from '@/lib/utils';
+import type { WeightedSignalCriterion } from '@/types/criteria';
 
 const MODALITY_OPTIONS = [
   { value: 'remote', label: 'Remoto' },
@@ -31,15 +36,44 @@ const SORT_OPTIONS = [
   { value: 'modality', label: 'Modalidad' },
 ] as const;
 
+const SIGNAL_CATEGORY_LABELS: Record<WeightedSignalCriterion['category'], string> = {
+  'design-systems': 'Design systems',
+  'design-code': 'Design/code',
+  accessibility: 'Accesibilidad',
+  modality: 'Modalidad',
+  maturity: 'Madurez',
+  collaboration: 'Colaboración',
+  exclusion: 'Exclusión',
+  role: 'Rol',
+};
+
+function signalToneClasses(signal: WeightedSignalCriterion): string {
+  if (signal.weight < 0) {
+    return 'border-warning/30 bg-warning/10 text-warning hover:bg-warning/15';
+  }
+
+  if (signal.weight > 0) {
+    return 'border-success/30 bg-success/10 text-success hover:bg-success/15';
+  }
+
+  return 'border-border bg-muted text-muted-foreground hover:bg-background hover:text-foreground';
+}
+
 export function FilterFields() {
   const { filters, setFilter, toggleFilter, resetFilters } = useJobFilters();
   const { data: sources = [] } = useSources();
+  const { data: criteria } = useCriteriaConfig();
   const [keywordDraft, setKeywordDraft] = useState('');
   const queryId = 'filters-query';
   const minScoreId = 'filters-min-score';
   const keywordId = 'filters-keyword';
   const sortId = 'filters-sort';
   const sortDirId = 'filters-sort-dir';
+
+  const activeSignals = useMemo(
+    () => (criteria ? getActiveWeightedSignals(criteria) : []),
+    [criteria],
+  );
 
   function addKeywordFilter() {
     const nextKeyword = keywordDraft.trim();
@@ -68,7 +102,7 @@ export function FilterFields() {
 
       <section className="space-y-2">
         <span className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
-          Keywords
+          Manual
         </span>
         <div className="flex items-center gap-2">
           <Input
@@ -87,6 +121,72 @@ export function FilterFields() {
           <Button type="button" variant="outline" onClick={addKeywordFilter}>
             Añadir
           </Button>
+        </div>
+      </section>
+
+      <section className="space-y-2">
+        <div className="flex items-end justify-between gap-2">
+          <span className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+            Criterios
+          </span>
+          <span className="text-[0.625rem] font-semibold tracking-widest uppercase text-muted-foreground">
+            Activos
+          </span>
+        </div>
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          Estas señales vienen del editor de criterios y activan filtros rápidos.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {activeSignals.length > 0 ? (
+            activeSignals.map((signal) => {
+              const isActive = filters.criteria.includes(signal.id);
+
+              return (
+                <Button
+                  key={signal.id}
+                  type="button"
+                  variant="outline"
+                  size="xs"
+                  aria-pressed={isActive}
+                  title={signal.explain}
+                  onClick={() => toggleFilter('criteria', signal.id)}
+                  className={cn(
+                    'h-auto justify-start whitespace-normal px-3 py-2 text-left leading-tight aria-pressed:border-primary/30 aria-pressed:bg-primary/15 aria-pressed:text-primary',
+                    signalToneClasses(signal),
+                  )}
+                >
+                  <span className="flex flex-col items-start gap-1">
+                    <span>{signal.pattern}</span>
+                    <span className="text-[0.625rem] font-normal tracking-normal uppercase opacity-80">
+                      {SIGNAL_CATEGORY_LABELS[signal.category]}
+                    </span>
+                  </span>
+                </Button>
+              );
+            })
+          ) : (
+            <p className="text-xs text-muted-foreground">No hay señales activas disponibles.</p>
+          )}
+        </div>
+      </section>
+
+      <section className="space-y-2">
+        <span className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+          Estado
+        </span>
+        <div className="space-y-2">
+          {JOB_STATUS_OPTIONS.map((option) => (
+            <label key={option.value} className="flex cursor-pointer items-center gap-2 text-sm">
+              <Checkbox
+                checked={filters.status.includes(option.value)}
+                onCheckedChange={() => toggleFilter('status', option.value)}
+              />
+              <span>{option.label}</span>
+            </label>
+          ))}
+          <p className="text-xs text-muted-foreground">
+            Si no seleccionas nada, se muestran todas las ofertas.
+          </p>
         </div>
       </section>
 
@@ -153,9 +253,9 @@ export function FilterFields() {
         </span>
         <div className="space-y-2">
           {[
-            { key: 'unread_only', label: 'Solo no leídas' },
             { key: 'pending_analysis', label: 'Análisis pendiente' },
             { key: 'show_hidden', label: 'Mostrar ocultas' },
+            { key: 'show_criteria_hidden', label: 'Mostrar excluidas por criterios' },
           ].map((option) => (
             <label key={option.key} className="flex cursor-pointer items-center gap-2 text-sm">
               <Checkbox
@@ -221,7 +321,7 @@ export default function FilterPanel() {
         <div className="space-y-1">
           <h2 className="font-heading text-sm font-semibold tracking-widest uppercase">Filtros</h2>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Ajusta fuentes, modalidad, score y estado de lectura.
+            Ajusta fuentes, estados, modalidad, score y visibilidad.
           </p>
         </div>
         <Separator />

@@ -3,15 +3,21 @@ import { useEffect, useMemo } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import ErrorState from '@/components/shared/ErrorState';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import RedFlagList from '@/components/jobs/RedFlagList';
 import ScoreBadge from '@/components/jobs/ScoreBadge';
 import SignalChips from '@/components/jobs/SignalChips';
 import StatusBadge from '@/components/jobs/StatusBadge';
+import useCriteriaConfig from '@/hooks/use-criteria-config';
 import useJobActions from '@/hooks/use-job-actions';
 import useJobDetail from '@/hooks/use-job-detail';
 import useJobMatch from '@/hooks/use-job-match';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+import { getMatchedHardExcludes, findWeightedSignalByKeyword } from '@/lib/job-criteria';
+import { cn } from '@/lib/utils';
+import { getCriteriaConfigSnapshot } from '@/data/criteria-repository';
+import type { HardExcludeCriterion } from '@/types/criteria';
 
 function SectionTitle({ children }: { readonly children: string }) {
   return (
@@ -21,17 +27,55 @@ function SectionTitle({ children }: { readonly children: string }) {
   );
 }
 
+function SectionHint({ children }: { readonly children: string }) {
+  return <p className="text-xs leading-relaxed text-muted-foreground">{children}</p>;
+}
+
+function ChipLabel({
+  children,
+  tone = 'neutral',
+}: {
+  readonly children: string;
+  readonly tone?: 'neutral' | 'positive' | 'warning';
+}) {
+  return (
+    <Badge
+      className={cn(
+        'border px-2 py-1 text-[0.625rem] font-semibold tracking-widest uppercase',
+        tone === 'positive' && 'border-success/30 bg-success/10 text-success',
+        tone === 'warning' && 'border-warning/30 bg-warning/10 text-warning',
+        tone === 'neutral' && 'border-border bg-muted text-muted-foreground',
+      )}
+    >
+      {children}
+    </Badge>
+  );
+}
+
+function ExcludeCard({ criterion }: { readonly criterion: HardExcludeCriterion }) {
+  return (
+    <div className="space-y-2 border border-warning/20 bg-warning/5 p-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <ChipLabel tone="warning">{criterion.pattern}</ChipLabel>
+      </div>
+      <p className="text-sm text-muted-foreground">{criterion.reason}</p>
+    </div>
+  );
+}
+
 export default function JobDetailPage() {
   const params = useParams();
   const id = params.id;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { data: criteria } = useCriteriaConfig();
   const { data: job, isLoading, isError, error } = useJobDetail(id);
   const { data: match } = useJobMatch(id);
   const { save, unsave, apply, markRead } = useJobActions();
 
   const search = searchParams.toString();
   const backToList = useMemo(() => (search ? `/ofertas?${search}` : '/ofertas'), [search]);
+  const criteriaConfig = criteria ?? getCriteriaConfigSnapshot();
 
   useEffect(() => {
     if (!isLoading && !isError && !job) {
@@ -63,6 +107,14 @@ export default function JobDetailPage() {
   const handleBack = () => {
     navigate(backToList);
   };
+
+  const positiveCriteriaSignals = job.positive_signals.filter((signal) =>
+    Boolean(findWeightedSignalByKeyword(signal, criteriaConfig)),
+  );
+  const detectedPositiveSignals = job.positive_signals.filter(
+    (signal) => !positiveCriteriaSignals.includes(signal),
+  );
+  const matchedExcludes = getMatchedHardExcludes(job, criteriaConfig);
 
   return (
     <div className="h-full min-h-0 overflow-y-auto px-4 py-4 lg:px-6">
@@ -116,6 +168,10 @@ export default function JobDetailPage() {
 
         <section className="space-y-2">
           <SectionTitle>Resumen rápido</SectionTitle>
+          <SectionHint>
+            El detalle combina señales extraídas de la oferta con reglas activas del editor de
+            criterios.
+          </SectionHint>
           <p className="text-sm leading-relaxed text-muted-foreground">
             {match?.summary ?? job.summary ?? 'No hay resumen generado todavía.'}
           </p>
@@ -145,7 +201,11 @@ export default function JobDetailPage() {
 
         {match ? (
           <section className="space-y-3">
-            <SectionTitle>Match persistido</SectionTitle>
+            <div className="flex flex-wrap items-center gap-2">
+              <SectionTitle>Persistido</SectionTitle>
+              <ChipLabel tone="positive">Persistido</ChipLabel>
+            </div>
+            <SectionHint>Comparación almacenada entre la oferta y el perfil del usuario.</SectionHint>
             <div className="grid gap-4 rounded-none border border-border p-4 lg:grid-cols-3">
               <div className="space-y-2">
                 <h3 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
@@ -171,19 +231,84 @@ export default function JobDetailPage() {
           </section>
         ) : null}
 
-        <section className="grid gap-4 lg:grid-cols-2">
-          <div className="space-y-3">
-            <SectionTitle>Señales positivas</SectionTitle>
-            <SignalChips signals={job.positive_signals} max={6} />
+        <section className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <SectionTitle>Señales</SectionTitle>
+            <ChipLabel tone="positive">Extraído</ChipLabel>
+            {positiveCriteriaSignals.length > 0 ? <ChipLabel tone="positive">Criterios</ChipLabel> : null}
           </div>
-          <div className="space-y-3">
-            <SectionTitle>Red flags</SectionTitle>
-            <RedFlagList flags={job.red_flags} />
+          <SectionHint>
+            Las coincidencias con criterios activos aparecen separadas de las señales detectadas
+            automáticamente en la oferta.
+          </SectionHint>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="space-y-3 rounded-none border border-border p-4">
+              <h3 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+                Criterios
+              </h3>
+              <SignalChips signals={positiveCriteriaSignals} max={6} />
+              {positiveCriteriaSignals.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No hay señales positivas que crucen con criterios activos.
+                </p>
+              ) : null}
+            </div>
+            <div className="space-y-3 rounded-none border border-border p-4">
+              <h3 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+                Extraído
+              </h3>
+              <SignalChips signals={detectedPositiveSignals} max={6} />
+              {detectedPositiveSignals.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Todas las señales positivas están cubiertas por criterios activos.
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </section>
+
+        <section className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <SectionTitle>Alertas</SectionTitle>
+            {matchedExcludes.length > 0 ? <ChipLabel tone="warning">Criterios</ChipLabel> : null}
+            <ChipLabel tone="warning">Extraído</ChipLabel>
+          </div>
+          <SectionHint>
+            Las reglas excluyentes activas se muestran aparte de las alertas detectadas en la
+            oferta.
+          </SectionHint>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="space-y-3 rounded-none border border-border p-4">
+              <h3 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+                Criterios
+              </h3>
+              <div className="space-y-2">
+                {matchedExcludes.length > 0 ? (
+                  matchedExcludes.map((criterion) => <ExcludeCard key={criterion.id} criterion={criterion} />)
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No hay exclusiones activas que coincidan con esta oferta.
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="space-y-3 rounded-none border border-border p-4">
+              <h3 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+                Extraído
+              </h3>
+              <RedFlagList flags={job.red_flags} />
+              {job.red_flags.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No se detectaron red flags.</p>
+              ) : null}
+            </div>
           </div>
         </section>
 
         <section className="space-y-3">
           <SectionTitle>Match con perfil</SectionTitle>
+          <SectionHint>
+            El encaje con perfil se basa en el resultado persistido del análisis de la oferta.
+          </SectionHint>
           <div className="grid gap-4 rounded-none border border-border p-4 lg:grid-cols-3">
             <div className="space-y-2">
               <h3 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">

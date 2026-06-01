@@ -14,6 +14,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import useJobActions from '@/hooks/use-job-actions';
+import useCriteriaConfig from '@/hooks/use-criteria-config';
+import { getCriteriaConfigSnapshot } from '@/data/criteria-repository';
+import { findWeightedSignalByKeyword, getMatchedHardExcludes } from '@/lib/job-criteria';
 import type { Job } from '@/types/job';
 import { cn } from '@/lib/utils';
 
@@ -44,6 +47,15 @@ function formatRelativeDate(value: string | null): string {
 
 export default function JobCard({ job, isActive }: JobCardProps) {
   const { save, unsave, hide, apply } = useJobActions();
+  const { data: criteria } = useCriteriaConfig();
+  const criteriaConfig = criteria ?? getCriteriaConfigSnapshot();
+  const positiveCriteriaSignals = job.positive_signals.filter((signal) =>
+    Boolean(findWeightedSignalByKeyword(signal, criteriaConfig)),
+  );
+  const otherPositiveSignals = job.positive_signals.filter(
+    (signal) => !positiveCriteriaSignals.includes(signal),
+  );
+  const matchedExcludes = getMatchedHardExcludes(job, criteriaConfig);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key === ' ') {
@@ -130,8 +142,63 @@ export default function JobCard({ job, isActive }: JobCardProps) {
         </div>
       </div>
 
-      <SignalChips signals={job.positive_signals} max={3} />
-      <RedFlagList flags={job.red_flags} max={1} />
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[0.625rem] font-semibold tracking-widest uppercase text-muted-foreground">
+            Señales
+          </span>
+          {positiveCriteriaSignals.length > 0 ? (
+            <span className="text-[0.625rem] font-semibold tracking-widest uppercase text-success">
+              Criterios
+            </span>
+          ) : null}
+          {otherPositiveSignals.length > 0 ? (
+            <span className="text-[0.625rem] font-semibold tracking-widest uppercase text-muted-foreground">
+              Extraído
+            </span>
+          ) : null}
+        </div>
+        <div className="space-y-1.5">
+          {positiveCriteriaSignals.length > 0 ? (
+            <div className="space-y-1">
+              <p className="text-[0.625rem] font-semibold tracking-widest uppercase text-success">
+                Criterios
+              </p>
+              <SignalChips signals={positiveCriteriaSignals} max={2} />
+            </div>
+          ) : null}
+          {otherPositiveSignals.length > 0 ? (
+            <div className="space-y-1">
+              <p className="text-[0.625rem] font-semibold tracking-widest uppercase text-muted-foreground">
+                Extraído
+              </p>
+              <SignalChips signals={otherPositiveSignals} max={2} />
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[0.625rem] font-semibold tracking-widest uppercase text-muted-foreground">
+            Alertas
+          </span>
+          {matchedExcludes.length > 0 ? (
+            <span className="text-[0.625rem] font-semibold tracking-widest uppercase text-warning">
+              Criterios
+            </span>
+          ) : null}
+        </div>
+        {matchedExcludes.length > 0 ? (
+          <div className="space-y-1 rounded-none border border-warning/20 bg-warning/5 p-2">
+            <p className="text-[0.625rem] font-semibold tracking-widest uppercase text-warning">
+              Criterios
+            </p>
+            <SignalChips signals={matchedExcludes.map((criterion) => criterion.pattern)} max={2} />
+          </div>
+        ) : null}
+        <RedFlagList flags={job.red_flags} max={1} />
+      </div>
 
       <Link
         to={`/ofertas/${job.id}`}
