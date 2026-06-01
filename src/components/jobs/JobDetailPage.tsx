@@ -12,9 +12,11 @@ import SignalChips from '@/components/jobs/SignalChips';
 import StatusBadge from '@/components/jobs/StatusBadge';
 import useCriteriaConfig from '@/hooks/use-criteria-config';
 import useJobActions from '@/hooks/use-job-actions';
+import useJobAnalysisActions from '@/hooks/use-job-analysis-actions';
 import useJobDetail from '@/hooks/use-job-detail';
 import useJobMatch from '@/hooks/use-job-match';
 import { getMatchedHardExcludes, findWeightedSignalByKeyword } from '@/lib/job-criteria';
+import { calculateJobScore } from '@/lib/job-scoring';
 import { cn } from '@/lib/utils';
 import { getCriteriaConfigSnapshot } from '@/data/criteria-repository';
 import type { HardExcludeCriterion } from '@/types/criteria';
@@ -72,10 +74,16 @@ export default function JobDetailPage() {
   const { data: job, isLoading, isError, error } = useJobDetail(id);
   const { data: match } = useJobMatch(id);
   const { save, unsave, apply, markRead } = useJobActions();
+  const { analyze, compare, canRun, isAnalyzing, isComparing, error: analysisError } =
+    useJobAnalysisActions(id);
 
   const search = searchParams.toString();
   const backToList = useMemo(() => (search ? `/ofertas?${search}` : '/ofertas'), [search]);
   const criteriaConfig = criteria ?? getCriteriaConfigSnapshot();
+  const scoreBreakdown = useMemo(
+    () => (job ? calculateJobScore(job, criteriaConfig) : null),
+    [job, criteriaConfig],
+  );
 
   useEffect(() => {
     if (!isLoading && !isError && !job) {
@@ -104,6 +112,8 @@ export default function JobDetailPage() {
     return <div className="h-full min-h-0 overflow-y-auto px-4 py-4 lg:px-6" />;
   }
 
+  const resolvedScoreBreakdown = scoreBreakdown!;
+
   const handleBack = () => {
     navigate(backToList);
   };
@@ -127,7 +137,7 @@ export default function JobDetailPage() {
             </Button>
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <ScoreBadge score={job.final_score} />
+                <ScoreBadge score={resolvedScoreBreakdown.finalScore} />
                 <StatusBadge status={job.status} />
               </div>
               <h1 className="font-heading text-2xl font-semibold tracking-wide uppercase">
@@ -151,6 +161,32 @@ export default function JobDetailPage() {
               <CheckCircle2 className="size-3.5" />
               Aplicar
             </Button>
+            <div className="flex flex-wrap justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void analyze()}
+                disabled={!canRun || isAnalyzing}
+              >
+                {isAnalyzing ? 'Analizando...' : 'Reanalizar'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void compare()}
+                disabled={!canRun || isComparing}
+              >
+                {isComparing ? 'Comparando...' : 'Comparar perfil'}
+              </Button>
+            </div>
+            {!canRun ? (
+              <p className="max-w-xs text-right text-xs text-muted-foreground">
+                Disponible solo con Supabase configurado y sesión activa.
+              </p>
+            ) : null}
+            {analysisError instanceof Error ? (
+              <p className="max-w-xs text-right text-xs text-danger">{analysisError.message}</p>
+            ) : null}
             <a
               href={job.url}
               target="_blank"
@@ -179,33 +215,35 @@ export default function JobDetailPage() {
 
         <section className="space-y-3">
           <SectionTitle>Score breakdown</SectionTitle>
+          <SectionHint>{resolvedScoreBreakdown.summary}</SectionHint>
           <div className="grid gap-3 sm:grid-cols-2">
-            {[
-              { label: 'Fuente', value: job.source_quality_score },
-              { label: 'Keywords', value: job.keyword_score },
-              { label: 'Semántico', value: job.semantic_score },
-              { label: 'Match perfil', value: job.profile_match_score },
-            ].map((item) => (
-              <div key={item.label} className="space-y-2 rounded-none border border-border p-3">
+            {resolvedScoreBreakdown.components.map((item) => (
+              <div key={item.key} className="space-y-2 rounded-none border border-border p-3">
                 <div className="flex items-center justify-between text-xs uppercase tracking-widest text-muted-foreground">
                   <span>{item.label}</span>
-                  <span>{item.value ?? '—'}</span>
+                  <span>
+                    {item.score} · {item.weight}%
+                  </span>
                 </div>
                 <div className="h-2 overflow-hidden bg-muted">
-                  <div className="h-full bg-primary" style={{ width: `${item.value ?? 0}%` }} />
+                  <div className="h-full bg-primary" style={{ width: `${item.score}%` }} />
                 </div>
+                <p className="text-xs leading-relaxed text-muted-foreground">{item.reason}</p>
               </div>
             ))}
           </div>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            {resolvedScoreBreakdown.explanation}
+          </p>
         </section>
 
-        {match ? (
+        {match && match.profile_match_score !== null ? (
           <section className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <SectionTitle>Persistido</SectionTitle>
+              <SectionTitle>Comparación con perfil</SectionTitle>
               <ChipLabel tone="positive">Persistido</ChipLabel>
             </div>
-            <SectionHint>Comparación almacenada entre la oferta y el perfil del usuario.</SectionHint>
+            <SectionHint>Resultado de la última comparación de esta oferta con tu perfil.</SectionHint>
             <div className="grid gap-4 rounded-none border border-border p-4 lg:grid-cols-3">
               <div className="space-y-2">
                 <h3 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
@@ -223,9 +261,17 @@ export default function JobDetailPage() {
                 <h3 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
                   Recomendaciones
                 </h3>
-                <p className="text-sm text-muted-foreground">
-                  {match.recommendations[0] ?? 'Sin recomendaciones.'}
-                </p>
+                {match.recommendations.length > 0 ? (
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    {match.recommendations.map((recommendation, index) => (
+                      <li key={`${index}-${recommendation}`} className="rounded-none border border-border px-3 py-2">
+                        {recommendation}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Sin recomendaciones.</p>
+                )}
               </div>
             </div>
           </section>

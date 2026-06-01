@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -9,14 +11,15 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Toggle } from '@/components/ui/toggle';
+import SourceEditorSheet from '@/components/config/SourceEditorSheet';
 import useSources from '@/hooks/use-sources';
 import {
-  createSource,
   deleteSource,
   setSourceActive,
   updateSourceRunInfo,
 } from '@/data/source-repository';
 import { cn } from '@/lib/utils';
+import type { Source } from '@/types/source';
 
 function SourceHealthIndicator({ failures }: { readonly failures: number }) {
   const tone = failures >= 3 ? 'error' : failures > 0 ? 'warning' : 'ok';
@@ -42,31 +45,8 @@ function SourceHealthIndicator({ failures }: { readonly failures: number }) {
 
 export default function SourcesPage() {
   const { data: sources = [], isLoading, refetch } = useSources();
-
-  async function handleAddSource() {
-    const name = window.prompt('Nombre de la fuente');
-    const url = window.prompt('URL de la fuente');
-
-    if (!name || !url) {
-      return;
-    }
-
-    await createSource({
-      name,
-      url,
-      type: 'manual',
-      category: 'generalist',
-      active: true,
-      priority: 5,
-      parser_key: null,
-      last_success_at: null,
-      last_error_at: null,
-      consecutive_failures: 0,
-      offers_found: 0,
-      notes: null,
-    });
-    await refetch();
-  }
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorSource, setEditorSource] = useState<Source | null>(null);
 
   return (
     <div className="h-full overflow-y-auto px-4 py-4 lg:px-6">
@@ -78,7 +58,13 @@ export default function SourcesPage() {
               Gestiona las fuentes desde las que Buscampleo rastrea ofertas.
             </p>
           </div>
-          <Button type="button" onClick={() => void handleAddSource()}>
+          <Button
+            type="button"
+            onClick={() => {
+              setEditorSource(null);
+              setEditorOpen(true);
+            }}
+          >
             Añadir fuente
           </Button>
         </div>
@@ -119,7 +105,15 @@ export default function SourcesPage() {
                       >
                         {source.active ? 'Activa' : 'Inactiva'}
                       </Toggle>
-                      <Button type="button" variant="outline" size="sm">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setEditorSource(source);
+                          setEditorOpen(true);
+                        }}
+                      >
                         Editar
                       </Button>
                       <Button
@@ -131,7 +125,7 @@ export default function SourcesPage() {
                             last_success_at: new Date().toISOString(),
                             last_error_at: null,
                             consecutive_failures: 0,
-                            offers_found: source.offers_found + 1,
+                            offers_found: source.offers_found,
                           });
                           await refetch();
                         }}
@@ -155,6 +149,19 @@ export default function SourcesPage() {
               ))}
           </TableBody>
         </Table>
+
+        <SourceEditorSheet
+          key={`${editorOpen ? 'open' : 'closed'}-${editorSource?.id ?? 'new'}`}
+          source={editorSource}
+          open={editorOpen}
+          onClose={() => {
+            setEditorOpen(false);
+            setEditorSource(null);
+          }}
+          onSaved={async () => {
+            await refetch();
+          }}
+        />
       </div>
     </div>
   );
